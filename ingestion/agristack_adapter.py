@@ -13,7 +13,8 @@ from typing import Optional
 
 AGRISTACK_URL = os.getenv("AGRISTACK_SANDBOX_URL", "http://localhost:8000/mock/agristack")
 AGRISTACK_KEY = os.getenv("AGRISTACK_API_KEY", "mock_key_for_demo")
-DB_PATH = os.getenv("DATABASE_PATH", "./krishisetu.db")
+DEFAULT_DB = "/tmp/krishisetu.db" if os.getenv("VERCEL") else "./krishisetu.db"
+DB_PATH = os.getenv("DATABASE_PATH", DEFAULT_DB)
 
 
 def _direct_mock_register(farmer_data: dict) -> dict:

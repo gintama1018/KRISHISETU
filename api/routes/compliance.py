@@ -10,7 +10,8 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-DB_PATH = os.getenv("DATABASE_PATH", "./krishisetu.db")
+DEFAULT_DB = "/tmp/krishisetu.db" if os.getenv("VERCEL") else "./krishisetu.db"
+DB_PATH = os.getenv("DATABASE_PATH", DEFAULT_DB)
 router = APIRouter()
 
 
