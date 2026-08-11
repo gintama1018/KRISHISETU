@@ -18,6 +18,7 @@ async def fetch_nasa_power(lat: float, lon: float, days_back: int = 30) -> dict:
     end_date = datetime.now()
     start_date = end_date - timedelta(days=days_back)
 
+    nasa_key = os.getenv("NASA_API_KEY", "DEMO_KEY")
     params = {
         "parameters": "T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,ALLSKY_SFC_SW_DWN,RH2M,WS2M",
         "community": "AG",
@@ -26,6 +27,7 @@ async def fetch_nasa_power(lat: float, lon: float, days_back: int = 30) -> dict:
         "start": start_date.strftime("%Y%m%d"),
         "end": end_date.strftime("%Y%m%d"),
         "format": "JSON",
+        "api_key": nasa_key,
     }
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.get(NASA_POWER_URL, params=params)

@@ -37,14 +37,6 @@ app.include_router(cross_domain.router, prefix="/api/v1/cross-domain", tags=["Cr
 app.include_router(compliance.router, prefix="/api/v1/compliance", tags=["DPDP Compliance"])
 app.include_router(mock_agristack.router, prefix="/mock/agristack", tags=["AgriStack Mock"])
 
-# Serve frontend PWA (graceful if directory doesn't exist)
-import pathlib
-_frontend_dir = pathlib.Path(__file__).parent / "frontend"
-if _frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
-
-
-
 @app.get("/api/v1/health", tags=["Health"])
 async def health_check():
     return {
@@ -53,3 +45,11 @@ async def health_check():
         "version": "1.0.0",
         "layers": ["offline-pwa", "ingestion", "streaming", "ai-advisory", "multilingual", "role-delivery", "compliance"],
     }
+
+
+# Serve frontend PWA (graceful if directory doesn't exist)
+import pathlib
+_frontend_dir = pathlib.Path(__file__).parent / "frontend"
+if _frontend_dir.exists():
+    app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
+

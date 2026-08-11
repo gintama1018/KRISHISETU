@@ -1,14 +1,12 @@
 """
-KrishiSetu — Gemini AI Advisory Generator
-Layer 3: AI Advisory (Gemini 2.5 Flash)
+KrishiSetu — AI Advisory Generator
+Layer 3: AI Advisory (Supports OpenAI GPT-4o-mini / Gemini 2.5 Flash / Fallback)
 """
 import os
 import hashlib
 import threading
+import httpx
 from typing import Optional
-import google.generativeai as genai
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY", ""))
 
 _cache: dict = {}
 _cache_lock = threading.Lock()
@@ -49,6 +47,39 @@ Keep total response under 200 words.
 """
 
 
+async def _generate_openai(prompt: str, api_key: str) -> str:
+    """Generate advisory using OpenAI chat completions endpoint."""
+    async with httpx.AsyncClient(timeout=25) as client:
+        res = await client.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": "You are KrishiSetu, an AI agricultural advisor for Indian farmers."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.4,
+                "max_tokens": 400,
+            },
+        )
+        res.raise_for_status()
+        data = res.json()
+        return data["choices"][0]["message"]["content"].strip()
+
+
+async def _generate_gemini(prompt: str, api_key: str) -> str:
+    """Generate advisory using Gemini API."""
+    import google.generativeai as genai
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    response = model.generate_content(prompt)
+    return response.text.strip()
+
+
 async def generate_advisory(
     crop: str,
     drought_score: int,
@@ -64,7 +95,7 @@ async def generate_advisory(
     month: str = "",
     mandi_price: str = "Not available",
 ) -> dict:
-    """Generate a Gemini 2.5 Flash advisory for a farmer."""
+    """Generate AI advisory using OpenAI, Gemini, or Agronomic Fallback."""
 
     cache_key = hashlib.md5(
         f"{crop}{drought_score}{pest_score}{sowing_rec}{language}{month}".encode()
@@ -90,22 +121,33 @@ async def generate_advisory(
         mandi_price=mandi_price,
     )
 
-    try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
-        advisory_text = response.text.strip()
-    except Exception as e:
+    advisory_text = None
+    openai_key = os.getenv("OPENAI_API_KEY", "").strip()
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+
+    # Priority 1: OpenAI (if key starts with sk-)
+    if openai_key and openai_key.startswith("sk-"):
+        try:
+            advisory_text = await _generate_openai(prompt, openai_key)
+        except Exception as e:
+            print(f"[Advisory] OpenAI error: {e}")
+
+    # Priority 2: Gemini (skip if placeholder key)
+    is_placeholder = "your_" in gemini_key.lower() or "here" in gemini_key.lower() or gemini_key == "AIzaSy..."
+    if not advisory_text and gemini_key and not is_placeholder:
+        try:
+            advisory_text = await _generate_gemini(prompt, gemini_key)
+        except Exception as e:
+            print(f"[Advisory] Gemini error: {e}")
+
+    # Priority 3: Agronomic Fallback
+    if not advisory_text:
         advisory_text = _fallback_advisory(crop, drought_level, pest_level, language)
 
     result = {
         "crop": crop,
         "language": language,
         "advisory": advisory_text,
-        "risk_summary": {
-            "drought": {"score": drought_score, "level": drought_level},
-            "pest": {"score": pest_score, "level": pest_level},
-            "sowing": sowing_rec,
-        },
         "cached": False,
     }
 
@@ -116,16 +158,16 @@ async def generate_advisory(
 
 
 def _fallback_advisory(crop: str, drought_level: str, pest_level: str, language: str) -> str:
-    """Offline fallback advisory when Gemini API is unavailable."""
-    advisories = {
-        "English": f"⚠️ {crop.title()} Advisory: Drought risk is {drought_level}, pest risk is {pest_level}. "
-                   "Monitor your fields closely, ensure adequate irrigation, and check for pest signs. "
-                   "Contact your local Krishi Vigyan Kendra for guidance.",
-        "Hindi": f"⚠️ {crop.title()} सलाह: सूखे का जोखिम {drought_level} है, कीट जोखिम {pest_level} है। "
-                 "अपने खेतों की निगरानी करें और सिंचाई सुनिश्चित करें।",
-        "Bengali": f"⚠️ {crop.title()} পরামর্শ: খরার ঝুঁকি {drought_level}, কীটপতঙ্গের ঝুঁকি {pest_level}। "
-                   "আপনার মাঠ পর্যবেক্ষণ করুন।",
-        "Assamese": f"⚠️ {crop.title()} পৰামৰ্শ: খৰাং বিপদ {drought_level}, পোক বিপদ {pest_level}। "
-                    "আপোনাৰ পথাৰ চোৱাচিতি কৰক।",
-    }
-    return advisories.get(language, advisories["English"])
+    """Farmer-friendly fallback advisory when no API key is provided."""
+    c = crop.upper()
+    return f"""⚠️ MAIN ALERT: {drought_level} drought risk and {pest_level} pest threat detected for your {c} crop.
+
+💧 IRRIGATION: Maintain optimal soil moisture. Avoid waterlogging during high humidity.
+
+🌱 CROP ACTION: Apply recommended N-P-K fertilizer based on current growth phase. Inspect leaf undersides daily.
+
+🐛 PEST WATCH: Watch for stem borers and aphids. Use neem oil spray if early infestation is spotted.
+
+📅 THIS WEEK'S PRIORITY: Clear field drainage channels before unexpected rainfall events.
+
+💰 MARKET TIP: Mandi prices are stable to rising. Consider holding stock if storage facilities permit."""

@@ -10,6 +10,7 @@ router = APIRouter()
 
 
 class FarmerRegistrationRequest(BaseModel):
+    farmer_id: Optional[str] = None
     name: str
     phone: str
     village_code: str
