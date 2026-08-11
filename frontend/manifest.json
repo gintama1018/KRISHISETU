@@ -1,0 +1,38 @@
+{
+  "name": "KrishiSetu",
+  "short_name": "KrishiSetu",
+  "description": "AI-powered farm advisory for rural India — offline-first PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["agriculture", "utilities"],
+  "lang": "en-IN",
+  "shortcuts": [
+    {
+      "name": "Get Advisory",
+      "url": "/?action=advisory",
+      "description": "Get today's farm advisory"
+    },
+    {
+      "name": "Officer Dashboard",
+      "url": "/dashboard.html",
+      "description": "Village risk dashboard"
+    }
+  ]
+}

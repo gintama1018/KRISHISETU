@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="description" content="KrishiSetu Officer Dashboard — District-level risk view for Agri-Extension Workers."/>
+  <title>KrishiSetu — Officer Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body class="dash-body">
+
+<!-- Dashboard Header -->
+<header class="dash-header">
+  <div class="dash-brand">
+    <div class="dash-logo">📊</div>
+    <div>
+      <span class="dash-brand-name">Officer Dashboard</span>
+      <span class="dash-brand-sub">KrishiSetu · Agri-Extension View</span>
+    </div>
+  </div>
+  <div class="dash-nav">
+    <div class="live-badge">
+      <span class="live-dot" id="live-dot"></span>
+      <span id="live-label">Live</span>
+    </div>
+    <a href="/home.html" class="dash-nav-btn">👨‍🌾 Farmer App</a>
+    <button class="dash-nav-btn primary-btn" onclick="loadAll()">↻ Refresh Data</button>
+  </div>
+</header>
+
+<div class="dash-main">
+
+  <!-- Filter Bar -->
+  <div class="dash-filter-bar">
+    <span class="df-label">District:</span>
+    <select class="df-select" id="dist-filter" onchange="loadAll()">
+      <option value="Kamrup">Kamrup</option>
+      <option value="Nalbari">Nalbari</option>
+      <option value="Barpeta">Barpeta</option>
+    </select>
+    <span class="df-label">Crop:</span>
+    <select class="df-select" id="crop-filter" onchange="loadAll()">
+      <option value="">All Crops</option>
+      <option value="rice">Rice</option>
+      <option value="wheat">Wheat</option>
+      <option value="maize">Maize</option>
+      <option value="mustard">Mustard</option>
+    </select>
+    <span class="df-label">Risk Level:</span>
+    <select class="df-select" id="risk-filter">
+      <option value="">All</option>
+      <option value="CRITICAL">Critical Only</option>
+      <option value="HIGH">High & Above</option>
+    </select>
+    <span class="df-updated" id="df-updated">Last updated: —</span>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stat-grid">
+    <div class="stat-card" style="border-top-color:var(--forest-500)">
+      <div class="stat-num" id="st-farmers">—</div>
+      <div class="stat-lbl">👨‍🌾 Registered Farmers</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--sienna-500)">
+      <div class="stat-num" style="color:var(--sienna-700)" id="st-critical">—</div>
+      <div class="stat-lbl">🚨 Critical Villages</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#EA580C">
+      <div class="stat-num" style="color:#C2410C" id="st-high">—</div>
+      <div class="stat-lbl">⚠️ High Risk Villages</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--amber-500)">
+      <div class="stat-num" style="color:var(--amber-700)" id="st-drought">—</div>
+      <div class="stat-lbl">💧 Avg Drought Score</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--forest-300)">
+      <div class="stat-num" style="color:var(--forest-600)" id="st-advisories">—</div>
+      <div class="stat-lbl">📱 Advisories Today</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--ink-300)">
+      <div class="stat-num" id="st-villages">—</div>
+      <div class="stat-lbl">🏘️ Villages Monitored</div>
+    </div>
+  </div>
+
+  <!-- Map + Alerts -->
+  <div class="main-grid">
+
+    <div class="dash-card">
+      <div class="dash-card-title">
+        🗺️ Village Risk Heatmap
+        <div style="display:flex;gap:14px;font-size:.7rem;font-weight:600;text-transform:none;letter-spacing:0">
+          <span style="color:var(--sienna-700)">● Critical</span>
+          <span style="color:#C2410C">● High</span>
+          <span style="color:var(--amber-700)">● Moderate</span>
+          <span style="color:var(--forest-600)">● Low</span>
+        </div>
+      </div>
+      <div id="officer-map"></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-title">🚨 Active Alerts</div>
+      <div class="alert-list" id="alert-list">
+        <div style="color:var(--ink-300);text-align:center;padding:40px 20px;font-size:.85rem">Loading alerts…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts Row -->
+  <div class="chart-grid">
+    <div class="dash-card">
+      <div class="dash-card-title">📈 Risk Score Trend — 7 Days</div>
+      <div class="chart-box"><canvas id="risk-chart"></canvas></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">💰 Rice Price Trend — Assam Mandis</div>
+      <div class="chart-box"><canvas id="price-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Village Table -->
+  <div class="dash-card" style="margin-bottom:24px">
+    <div class="dash-card-title">🏘️ Village Risk Summary</div>
+    <div style="overflow-x:auto">
+      <table class="vt" id="village-table">
+        <thead>
+          <tr>
+            <th>Village</th>
+            <th>Farmers</th>
+            <th>Crop</th>
+            <th>Drought</th>
+            <th>Pest</th>
+            <th>Composite</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="vt-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--ink-300);padding:24px">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Labor Advisory Section -->
+  <div class="labor-section">
+    <div class="labor-section-title">⚒️ Field Labor Safety · District-Level Summary</div>
+    <div class="labor-grid">
+      <div class="labor-item">
+        <div class="labor-icon" id="l-icon">—</div>
+        <div class="labor-val" id="l-level">—</div>
+        <div class="labor-key">Heat Stress Level</div>
+      </div>
+      <div class="labor-item">
+        <div class="labor-val" style="color:var(--amber-700);font-size:1rem" id="l-hours">—</div>
+        <div class="labor-key" style="margin-top:4px">Safe Working Hours</div>
+      </div>
+      <div class="labor-item" style="grid-column:span 2">
+        <div style="font-size:.85rem;color:var(--ink-700);line-height:1.65" id="l-detail">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast" style="position:fixed;bottom:30px" ></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

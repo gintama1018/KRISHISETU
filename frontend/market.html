@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu Market — Live mandi prices from AGMARKNET for your crop."/>
+  <title>KrishiSetu — Market Prices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div id="offline-bar" class="offline-bar hidden">📵 Offline — showing last known prices</div>
+
+<div class="mobile-wrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">💰</div>
+      <div>
+        <span class="topbar-title">Market Prices</span>
+        <span class="topbar-sub">AGMARKNET · data.gov.in</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-icon" onclick="loadPrices()">↻</button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Commodity Chips -->
+    <div>
+      <div class="section-label">Commodity</div>
+      <div class="chip-row" id="commodity-chips">
+        <button class="chip active" onclick="selectCommodity('Rice',this)">🌾 Rice</button>
+        <button class="chip" onclick="selectCommodity('Wheat',this)">🌿 Wheat</button>
+        <button class="chip" onclick="selectCommodity('Maize',this)">🌽 Maize</button>
+        <button class="chip" onclick="selectCommodity('Cotton',this)">🪴 Cotton</button>
+        <button class="chip" onclick="selectCommodity('Mustard',this)">🟡 Mustard</button>
+        <button class="chip" onclick="selectCommodity('Soybean',this)">🫘 Soybean</button>
+      </div>
+    </div>
+
+    <!-- Price Hero -->
+    <div class="price-hero fade" id="price-hero">
+      <div class="ph-commodity" id="ph-commodity">RICE</div>
+      <div class="ph-price" id="ph-price">₹—</div>
+      <div class="ph-unit">per quintal · Modal Price</div>
+      <div class="ph-trend" id="ph-trend">
+        <span id="ph-trend-icon">📊</span>
+        <span id="ph-trend-text">Loading…</span>
+      </div>
+    </div>
+
+    <!-- State Filter -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:.78rem;font-weight:700;color:var(--ink-500);white-space:nowrap">State:</span>
+      <select class="form-select" id="state-select" style="flex:1" onchange="loadPrices()">
+        <option value="Assam">Assam</option>
+        <option value="West Bengal">West Bengal</option>
+        <option value="Bihar">Bihar</option>
+        <option value="Odisha">Odisha</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Punjab">Punjab</option>
+        <option value="Gujarat">Gujarat</option>
+      </select>
+    </div>
+
+    <!-- Mandi List -->
+    <div>
+      <div class="section-label" style="margin-bottom:10px">
+        Mandi Prices
+        <span style="font-size:.68rem;color:var(--ink-300)" id="price-count"></span>
+      </div>
+      <div class="mandi-list" id="mandi-list">
+        <div class="loading-row"><div class="spinner"></div>Fetching prices…</div>
+      </div>
+    </div>
+
+    <!-- Price explanation -->
+    <div class="notice notice-good">
+      <span class="notice-icon">ℹ️</span>
+      <div>
+        <div class="notice-title">About these prices</div>
+        <div class="notice-body">Modal price = most common traded price at the mandi on the latest available date. Source: AGMARKNET open API.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="tabbar">
+    <a href="/home.html"     class="tab"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
+    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
+    <a href="/market.html"   class="tab active"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
+    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+  </nav>
+
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/js/shared.js"></script>
+<script src="/js/market.js"></script>
+</body>
+</html>

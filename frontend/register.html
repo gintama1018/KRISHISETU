@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu — Register as a farmer to get personalized AI advisories."/>
+  <title>KrishiSetu — Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div class="mobile-wrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">📝</div>
+      <div>
+        <span class="topbar-title">Create Profile</span>
+        <span class="topbar-sub">Takes 1 minute</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a href="/" class="topbar-btn topbar-btn-icon">←</a>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Header -->
+    <div style="text-align:center;padding:10px 0 4px">
+      <div style="font-size:2.8rem;margin-bottom:10px">👨‍🌾</div>
+      <h1 style="font-size:1.25rem;font-weight:900;color:var(--ink-900);margin-bottom:6px">Set Up Your Farm Profile</h1>
+      <p style="font-size:.85rem;color:var(--ink-500);line-height:1.6">Your data is encrypted and protected under India's DPDP Act 2023.</p>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="card fade">
+      <form id="reg-form" onsubmit="submitRegistration(event)">
+
+        <div class="form-group">
+          <label class="form-label" for="fn-name">Full Name *</label>
+          <input class="form-input" type="text" id="fn-name" placeholder="e.g. Ramesh Kalita" required autocomplete="name"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fn-phone">Phone Number *</label>
+          <input class="form-input" type="tel" id="fn-phone" placeholder="+91 98765 43210" required autocomplete="tel"/>
+          <div class="form-hint">🔒 Stored as one-way hash — not readable by anyone</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fn-crop">Primary Crop *</label>
+          <select class="form-select" id="fn-crop" required>
+            <option value="">— Select your main crop —</option>
+            <option value="rice">🌾 Rice (Dhan)</option>
+            <option value="wheat">🌿 Wheat (Gehun)</option>
+            <option value="maize">🌽 Maize (Makka)</option>
+            <option value="cotton">🪴 Cotton (Kapas)</option>
+            <option value="mustard">🟡 Mustard (Sarson)</option>
+            <option value="soybean">🫘 Soybean</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fn-state">State *</label>
+          <select class="form-select" id="fn-state" required>
+            <option value="Assam">Assam</option>
+            <option value="West Bengal">West Bengal</option>
+            <option value="Bihar">Bihar</option>
+            <option value="Odisha">Odisha</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Gujarat">Gujarat</option>
+            <option value="Punjab">Punjab</option>
+            <option value="Rajasthan">Rajasthan</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fn-village">Village Code</label>
+          <input class="form-input" type="text" id="fn-village" placeholder="e.g. ASM-KAM-001" value="ASM-KAM-001"/>
+          <div class="form-hint">Ask your local Agri-Extension Officer for this code</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fn-area">Farm Area (acres)</label>
+          <input class="form-input" type="number" id="fn-area" placeholder="e.g. 2.5" min="0.1" step="0.1" value="2.0"/>
+        </div>
+
+        <div class="consent-box">
+          <input type="checkbox" id="fn-consent" required/>
+          <label for="fn-consent">
+            I consent to KrishiSetu using my crop and location data to generate farm advisories, mandi price alerts, and risk notifications.<span class="tag-dpdp">DPDP</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-forest btn-full btn-lg" id="reg-btn">
+          <span id="reg-btn-text">✅ Register &amp; Get Advisory</span>
+        </button>
+
+        <p style="text-align:center;font-size:.72rem;color:var(--ink-300);margin-top:12px">
+          By registering you agree to our <a href="#" style="color:var(--forest-700)">Privacy Policy</a>.
+          Right-to-erasure available in Profile page.
+        </p>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/js/db.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/register.js"></script>
+</body>
+</html>

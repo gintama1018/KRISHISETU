@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu — Your farmer profile, insurance evidence trail, and account settings."/>
+  <title>KrishiSetu — Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div class="mobile-wrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">👤</div>
+      <div>
+        <span class="topbar-title">My Profile</span>
+        <span class="topbar-sub">Account &amp; Insurance</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Not registered redirect -->
+    <div id="not-registered" class="hidden">
+      <div class="notice notice-warn">
+        <span class="notice-icon">ℹ️</span>
+        <div>
+          <div class="notice-title">Not Registered Yet</div>
+          <div class="notice-body">Create your profile to get personalized advisories and build an insurance evidence trail.</div>
+        </div>
+      </div>
+      <a href="/register.html" class="btn btn-forest btn-full btn-lg" style="margin-top:12px">📝 Create Profile</a>
+    </div>
+
+    <!-- Registered view -->
+    <div id="registered-view" class="hidden">
+
+      <!-- Profile Card -->
+      <div class="profile-card fade">
+        <div class="pf-avatar">👨‍🌾</div>
+        <div>
+          <div class="pf-name" id="pf-name">—</div>
+          <div class="pf-detail" id="pf-detail">—</div>
+          <div class="pf-id" id="pf-id">—</div>
+        </div>
+      </div>
+
+      <!-- Farm Details -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:0">Farm Details</div>
+        <div>
+          <div class="info-row"><span class="info-key">Primary Crop</span><span class="info-val" id="pf-crop">—</span></div>
+          <div class="info-row"><span class="info-key">State</span><span class="info-val" id="pf-state">—</span></div>
+          <div class="info-row"><span class="info-key">Village Code</span><span class="info-val" id="pf-village">—</span></div>
+          <div class="info-row"><span class="info-key">Plot Area</span><span class="info-val" id="pf-area">—</span></div>
+          <div class="info-row"><span class="info-key">Language</span><span class="info-val" id="pf-lang">—</span></div>
+          <div class="info-row"><span class="info-key">Registered</span><span class="info-val" id="pf-date">—</span></div>
+        </div>
+      </div>
+
+      <!-- DPDP Privacy -->
+      <div class="privacy-card">
+        <span class="privacy-icon">🔒</span>
+        <div>
+          <div class="privacy-title">DPDP Compliant — Data Protected</div>
+          <div class="privacy-body">Phone number stored as one-way bcrypt hash. Consent timestamp logged. Right-to-erasure available below. No PII sold to third parties.</div>
+        </div>
+      </div>
+
+      <!-- Insurance Evidence Trail -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px">
+          🛡️ Insurance Evidence Log
+          <button class="btn btn-ghost btn-sm" onclick="loadInsuranceTrail()">↻ Load</button>
+        </div>
+        <div id="ins-trail">
+          <div class="empty-state">
+            <div class="empty-icon">🛡️</div>
+            <div class="empty-title">No events logged yet</div>
+            <div class="empty-sub">Go to Advisory and tap "Log Evidence" after checking risk scores to start building your insurance trail.</div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-full btn-sm" style="margin-top:12px" onclick="loadInsuranceTrail()">Load Evidence Trail</button>
+      </div>
+
+      <!-- Actions -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px">Account Actions</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <button class="btn btn-outline btn-full" onclick="openLangSheet()">🌐 Change Language</button>
+          <a href="/dashboard.html" class="btn btn-outline btn-full" style="text-align:center">📊 Officer Dashboard</a>
+          <button class="btn btn-full" style="background:var(--amber-50);border:1.5px solid var(--amber-100);color:var(--amber-700);border-radius:var(--r-md);padding:11px 22px;font-weight:600;font-size:.9rem" onclick="requestErasure()">🗑️ Request Data Erasure (30 days)</button>
+          <button class="btn btn-full" style="background:var(--sienna-50);border:1.5px solid var(--sienna-100);color:var(--sienna-700);border-radius:var(--r-md);padding:11px 22px;font-weight:600;font-size:.9rem" onclick="signOut()">⬅️ Sign Out</button>
+        </div>
+      </div>
+
+      <!-- App version -->
+      <p style="text-align:center;font-size:.7rem;color:var(--ink-300)">KrishiSetu v2.0 · IIT Guwahati Hackathon 2026</p>
+
+    </div>
+
+  </div>
+
+  <nav class="tabbar">
+    <a href="/home.html"     class="tab"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
+    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
+    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
+    <a href="/profile.html"  class="tab active"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+  </nav>
+
+</div>
+
+<div id="lang-sheet" class="sheet-overlay hidden" onclick="if(event.target===this)closeLangSheet()">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Language / भाषा</div><div class="lang-grid" id="lang-grid"></div></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/db.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/profile.js"></script>
+</body>
+</html>

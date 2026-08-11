@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu — AI-generated farm advisory for your crop, location and weather."/>
+  <title>KrishiSetu — Advisory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div id="offline-bar" class="offline-bar hidden">📵 Offline — showing cached advisory</div>
+
+<div class="mobile-wrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">🤖</div>
+      <div>
+        <span class="topbar-title">Advisory</span>
+        <span class="topbar-sub">AI-generated · crop-specific</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Advisory Header Card -->
+    <div class="adv-header fade">
+      <div class="adv-header-top">
+        <div>
+          <div class="adv-eyebrow">Gemini 2.5 Flash · <span id="adv-lang-name">English</span></div>
+          <div class="adv-crop" id="adv-crop">Loading…</div>
+          <div class="adv-date" id="adv-date">—</div>
+        </div>
+        <button class="adv-refresh" onclick="loadAdvisory()" id="adv-refresh-btn">↻ Refresh</button>
+      </div>
+      <div class="adv-pills" id="adv-pills">
+        <span class="adv-pill">Loading…</span>
+      </div>
+    </div>
+
+    <!-- Main Advisory Text -->
+    <div class="adv-text-card">
+      <div class="adv-text-bar">
+        <div class="adv-text-dot"></div>
+        <span class="adv-text-lbl">Today's Advisory</span>
+        <span id="adv-cached-tag" class="adv-text-cached hidden">CACHED</span>
+      </div>
+      <div id="adv-body" class="adv-body">
+        <div class="loading-row"><div class="spinner"></div>Generating your personalized advisory…</div>
+      </div>
+      <div class="adv-actions">
+        <button class="btn btn-outline btn-sm" id="tts-btn" onclick="playAudio()" disabled>🔊 Listen</button>
+        <button class="btn btn-outline btn-sm" onclick="logInsuranceEvent()">📋 Log Evidence</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openLangSheet()">🌐 <span id="adv-lang-badge">EN</span></button>
+      </div>
+    </div>
+
+    <!-- Risk Breakdown -->
+    <div>
+      <div class="section-label">Risk Breakdown</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <div class="risk-detail">
+          <div class="rd-left">
+            <div class="rd-name">💧 Drought Risk</div>
+            <div class="rd-level" id="rd-drought-level">—</div>
+            <div class="rd-progress"><div class="rd-progress-fill" id="rd-drought-bar" style="width:0%;background:var(--forest-500)"></div></div>
+            <div class="rd-hint" id="rd-drought-hint">—</div>
+          </div>
+          <div class="rd-circle rdc-low" id="rd-drought-circle">—</div>
+        </div>
+
+        <div class="risk-detail">
+          <div class="rd-left">
+            <div class="rd-name">🐛 Pest Risk</div>
+            <div class="rd-level" id="rd-pest-level">—</div>
+            <div class="rd-progress"><div class="rd-progress-fill" id="rd-pest-bar" style="width:0%;background:var(--amber-500)"></div></div>
+            <div class="rd-hint" id="rd-pest-hint">—</div>
+          </div>
+          <div class="rd-circle rdc-low" id="rd-pest-circle">—</div>
+        </div>
+
+        <div class="sow-card">
+          <div class="sow-icon" id="sow-icon-bg" style="background:var(--forest-50)">🌱</div>
+          <div>
+            <div class="sow-name">Sowing Window</div>
+            <div class="sow-rec" id="sow-rec">—</div>
+            <div class="sow-detail" id="sow-detail">—</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Field Work / Labor Advisory -->
+    <div>
+      <div class="section-label">Field Work Safety</div>
+      <div class="labor-card labor-card-warn" id="labor-card">
+        <div class="labor-top">
+          <span style="font-size:1.2rem" id="labor-icon">⚒️</span>
+          <span class="labor-title" id="labor-title" style="color:var(--amber-700)">Heat Stress Advisory</span>
+        </div>
+        <div class="labor-body" id="labor-body">Loading…</div>
+        <div class="labor-hours" id="labor-hours-tag" style="background:var(--amber-700)">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="tabbar">
+    <a href="/home.html"     class="tab"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
+    <a href="/advisory.html" class="tab active"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
+    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
+    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+  </nav>
+
+</div>
+
+<div id="lang-sheet" class="sheet-overlay hidden" onclick="if(event.target===this)closeLangSheet()">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Language / भाषा</div><div class="lang-grid" id="lang-grid"></div></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/db.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/advisory.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu — AI-powered farm advisory for rural India. Get started free."/>
+  <title>KrishiSetu — Smart Farm Advisory</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div id="offline-bar" class="offline-bar hidden">📵 You're offline — data saved locally</div>
+<div id="install-bar" class="install-bar hidden">
+  <span style="flex:1">📲 Install KrishiSetu for offline use</span>
+  <button onclick="installPWA()" class="btn-forest" style="background:var(--forest-800);color:#fff">Install</button>
+  <button onclick="document.getElementById('install-bar').classList.add('hidden')" style="background:none;border:none;color:var(--ink-300);font-size:1.1rem">✕</button>
+</div>
+
+<div class="mobile-wrap">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">🌾</div>
+      <div>
+        <span class="topbar-title">KrishiSetu</span>
+        <span class="topbar-sub">कृषि सेतु</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
+      <a href="/dashboard.html" class="topbar-btn topbar-btn-icon" title="Officer Dashboard">📊</a>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-content">
+
+    <!-- ONBOARDING STATE (not registered) -->
+    <div id="onboard-state">
+      <div class="onboard-hero">
+        <div class="ob-emoji">🌾</div>
+        <h1 class="ob-title">KrishiSetu</h1>
+        <p class="ob-sub">AI-powered farm advisories in 8 Indian languages — works on 2G, even offline.</p>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature-row">
+          <span class="feat-icon">🤖</span>
+          <div>
+            <div class="feat-title">Gemini AI Advisory</div>
+            <div class="feat-desc">Crop-specific drought, pest & sowing guidance</div>
+          </div>
+        </div>
+        <div class="feature-row">
+          <span class="feat-icon">💰</span>
+          <div>
+            <div class="feat-title">Live Mandi Prices</div>
+            <div class="feat-desc">AGMARKNET data with trend analysis</div>
+          </div>
+        </div>
+        <div class="feature-row">
+          <span class="feat-icon">📵</span>
+          <div>
+            <div class="feat-title">Works Offline</div>
+            <div class="feat-desc">Syncs automatically when reconnected</div>
+          </div>
+        </div>
+        <div class="feature-row">
+          <span class="feat-icon">🔒</span>
+          <div>
+            <div class="feat-title">DPDP Compliant</div>
+            <div class="feat-desc">Consent-first. No PII stored in plain text.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:10px;">
+        <a href="/register.html" class="btn btn-forest btn-full btn-lg">🚀 Get Started — It's Free</a>
+        <p style="text-align:center;font-size:.75rem;color:var(--ink-300)">Already registered? <a href="/home.html" style="color:var(--forest-700);font-weight:600">Open App →</a></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Tabbar -->
+  <nav class="tabbar">
+    <a href="/home.html"     class="tab active"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
+    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
+    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
+    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+  </nav>
+
+</div>
+
+<!-- Language Sheet -->
+<div id="lang-sheet" class="sheet-overlay hidden" onclick="if(event.target===this)closeLangSheet()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Select Language / भाषा चुनें</div>
+    <div class="lang-grid" id="lang-grid"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/shared.js"></script>
+<script>
+  // Redirect registered users to home
+  if(localStorage.getItem('ks_farmer')) {
+    window.location.replace('/home.html');
+  }
+</script>
+</body>
+</html>

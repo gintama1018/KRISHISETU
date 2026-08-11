@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1E4D35"/>
+  <meta name="description" content="KrishiSetu Home — Today's risk overview for your farm."/>
+  <title>KrishiSetu — Home</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=3"/>
+</head>
+<body>
+
+<div id="offline-bar" class="offline-bar hidden">📵 You're offline — data saved locally</div>
+
+<div class="mobile-wrap">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">🌾</div>
+      <div>
+        <span class="topbar-title">KrishiSetu</span>
+        <span class="topbar-sub" id="topbar-greeting">Good morning</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
+      <a href="/dashboard.html" class="topbar-btn topbar-btn-icon">📊</a>
+    </div>
+  </header>
+
+  <div class="page-content">
+
+    <!-- Hero Banner -->
+    <div class="hero fade">
+      <div class="hero-eyebrow" id="h-eyebrow">Your Farm Today</div>
+      <div class="hero-name" id="h-name">Loading…</div>
+      <div class="hero-tag" id="h-crop-tag">—</div>
+      <div class="hero-divider"></div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val" id="hs-drought">—</span>
+          <span class="hero-stat-lbl">Drought</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" id="hs-pest">—</span>
+          <span class="hero-stat-lbl">Pest Risk</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" id="hs-sow">—</span>
+          <span class="hero-stat-lbl">Sowing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Alert -->
+    <div id="home-alert"></div>
+
+    <!-- Quick Nav -->
+    <div>
+      <div class="section-label">Quick Access</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <a href="/advisory.html" style="background:var(--white);border:1px solid var(--border-light);border-radius:var(--r-md);padding:16px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow-xs);text-decoration:none;transition:var(--ease);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-xs)'">
+          <span style="font-size:1.5rem">🤖</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--ink-700)">Advisory</span>
+        </a>
+        <a href="/market.html" style="background:var(--white);border:1px solid var(--border-light);border-radius:var(--r-md);padding:16px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow-xs);text-decoration:none;transition:var(--ease);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-xs)'">
+          <span style="font-size:1.5rem">💰</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--ink-700)">Market</span>
+        </a>
+        <a href="/profile.html" style="background:var(--white);border:1px solid var(--border-light);border-radius:var(--r-md);padding:16px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:var(--shadow-xs);text-decoration:none;transition:var(--ease);" onmouseover="this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.boxShadow='var(--shadow-xs)'">
+          <span style="font-size:1.5rem">🛡️</span>
+          <span style="font-size:.72rem;font-weight:700;color:var(--ink-700)">Insurance</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Today's Risk Tiles -->
+    <div>
+      <div class="section-label">
+        Today's Risk
+        <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="refreshRisk()">↻ Refresh</button>
+      </div>
+      <div class="risk-row" id="risk-tiles">
+        <div class="risk-tile lvl-low" id="tile-drought">
+          <div class="rt-top">
+            <span class="rt-icon">💧</span>
+            <span class="rt-badge">LOW</span>
+          </div>
+          <div class="rt-score" id="rt-d-score">—</div>
+          <div class="rt-label">Drought Risk</div>
+          <div class="rt-bar"><div class="rt-bar-fill" id="rt-d-bar" style="width:0%"></div></div>
+        </div>
+        <div class="risk-tile lvl-low" id="tile-pest">
+          <div class="rt-top">
+            <span class="rt-icon">🐛</span>
+            <span class="rt-badge">LOW</span>
+          </div>
+          <div class="rt-score" id="rt-p-score">—</div>
+          <div class="rt-label">Pest Risk</div>
+          <div class="rt-bar"><div class="rt-bar-fill" id="rt-p-bar" style="width:0%"></div></div>
+        </div>
+        <div class="risk-tile lvl-low" id="tile-labor">
+          <div class="rt-top">
+            <span class="rt-icon">⚒️</span>
+            <span class="rt-badge" id="rt-l-badge">—</span>
+          </div>
+          <div class="rt-score" style="font-size:1rem;margin-top:4px" id="rt-l-level">—</div>
+          <div class="rt-label">Field Work</div>
+          <div class="rt-bar"><div class="rt-bar-fill" id="rt-l-bar" style="width:0%"></div></div>
+        </div>
+        <div class="risk-tile lvl-low" id="tile-sow">
+          <div class="rt-top">
+            <span class="rt-icon">🌱</span>
+            <span class="rt-badge" id="rt-s-badge">—</span>
+          </div>
+          <div class="rt-score" style="font-size:.9rem;margin-top:4px" id="rt-s-rec">—</div>
+          <div class="rt-label">Sowing Window</div>
+          <div class="rt-bar"><div class="rt-bar-fill" id="rt-s-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advisory Preview -->
+    <div>
+      <div class="section-label">Latest Advisory Preview <a href="/advisory.html" style="font-size:.72rem;font-weight:700;color:var(--forest-700);text-decoration:none">View Full →</a></div>
+      <div class="card" id="adv-preview-card">
+        <div class="loading-row"><div class="spinner"></div> Loading advisory…</div>
+      </div>
+    </div>
+
+    <!-- Sync row -->
+    <div class="sync-row">
+      <span class="s-dot s-on" id="s-dot"></span>
+      <span id="s-text">Connected</span>
+      <span id="s-pending"></span>
+    </div>
+
+  </div>
+
+  <nav class="tabbar">
+    <a href="/home.html"     class="tab active"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
+    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
+    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
+    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+  </nav>
+
+</div>
+
+<div id="lang-sheet" class="sheet-overlay hidden" onclick="if(event.target===this)closeLangSheet()">
+  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Language / भाषा</div><div class="lang-grid" id="lang-grid"></div></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/db.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/home.js"></script>
+</body>
+</html>
