@@ -36,10 +36,12 @@ async function handleLoginSubmit(e) {
       }));
     }
 
-    // Open OTP modal
+    // Open OTP modal (pre-filled with 123456 for instant 1-click verification)
     document.getElementById('otp-target-email').textContent = currentEmail;
+    const otpInput = document.getElementById('otp-code-input');
+    if (otpInput) otpInput.value = '123456';
     document.getElementById('otp-modal').classList.remove('hidden');
-    document.getElementById('otp-code-input').focus();
+    toast(`Verification code: 123456 (pre-filled)`, 4000);
   } catch (err) {
     toast('Login error: ' + (err.message || 'Check connection'));
   }

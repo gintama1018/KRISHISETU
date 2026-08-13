@@ -47,11 +47,12 @@ async function submitRegistration(e) {
     localStorage.setItem('ks_farmer', JSON.stringify(farmer));
     if (typeof saveFarmerLocally === 'function') await saveFarmerLocally(farmer);
 
-    // Open OTP modal for real-time verification
+    // Open OTP modal for real-time verification (pre-filled with 123456 for instant 1-click verification)
     document.getElementById('otp-target-email').textContent = fd.email;
+    const otpInput = document.getElementById('otp-code-input');
+    if (otpInput) otpInput.value = '123456';
     document.getElementById('otp-modal').classList.remove('hidden');
-    document.getElementById('otp-code-input').focus();
-    toast(`Verification code sent to ${fd.email}`);
+    toast(`Verification code: 123456 (pre-filled)`, 4000);
   } catch (err) {
     // Offline fallback
     const offlineId = 'LOCAL_' + Date.now();
