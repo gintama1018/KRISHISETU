@@ -180,11 +180,12 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="text-align:center">Enter Verification Code</div>
     <p style="text-align:center;font-size:.82rem;color:var(--ink-4);margin-bottom:16px">
-      We sent a 6-digit code to <strong id="otp-target-email" style="color:var(--g-800)">—</strong>
+      We sent a 6-digit code to <strong id="otp-target-email" style="color:var(--g-800)">—</strong><br/>
+      <span style="font-size:.74rem;color:var(--g-700);display:block;margin-top:4px">Check Spam folder or enter instant demo code <strong>123456</strong></span>
     </p>
 
     <div class="form-group">
-      <input class="form-input" type="text" id="otp-code-input" placeholder="Enter 6-digit code" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:1.4rem;font-weight:800;font-family:monospace" required/>
+      <input class="form-input" type="text" id="otp-code-input" placeholder="123456" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:1.4rem;font-weight:800;font-family:monospace" required/>
     </div>
 
     <button class="btn btn-primary btn-full btn-lg" onclick="verifyRegistrationOTP()" id="verify-btn" style="margin-top:12px">
