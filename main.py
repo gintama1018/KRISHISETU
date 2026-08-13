@@ -79,6 +79,14 @@ async def root_dashboard():
         return FileResponse(str(dash_path))
     return {"message": "KrishiSetu API Server Running"}
 
+@app.get("/landing.html")
+async def serve_landing():
+    """Explicit landing page route serving index.html for local Uvicorn runs."""
+    landing_path = _frontend_dir / "index.html"
+    if landing_path.exists():
+        return FileResponse(str(landing_path))
+    return FileResponse(str(_frontend_dir / "dashboard.html"))
+
 if _frontend_dir.exists():
     app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
 

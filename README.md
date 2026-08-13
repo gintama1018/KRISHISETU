@@ -13,7 +13,7 @@
 2. **Cross-Domain Intelligence Engine**:
    - *Heat Stress → Labor Safety*: Automatically reschedules field working hours when temperatures & humidity cross safety thresholds.
    - *Pest Log → Insurance Evidence*: Converts advisory pest events into verifiable evidence trails in Supabase for crop insurance claims.
-3. **Offline-First PWA & Web Push (Layer 0)**: Full functionality offline using IndexedDB caching, Service Worker v5 background sync, and native Web Push notifications via VAPID.
+3. **Offline-First PWA & Web Push (Layer 0)**: Full functionality offline using IndexedDB caching, Service Worker v6 background sync, and native Web Push notifications via VAPID.
 4. **Supabase PostgreSQL & DPDP Compliance**: Real cloud database with zero plain-text PII storage; phone numbers are bcrypt-hashed, with immutable audit logging and 30-day right-to-erasure.
 5. **Role-Based Delivery**: Tailored mobile PWA experience for farmers + macro-level Leaflet heatmap dashboard for Agri-Extension Officers.
 
@@ -26,7 +26,7 @@ flowchart TD
     subgraph L0["Layer 0: Client & Offline Infrastructure"]
         PWA["Farmer PWA (HTML5/CSS3/JS)"]
         IDB[("IndexedDB Local Store")]
-        SW["Service Worker v3 Sync Queue"]
+        SW["Service Worker v6 Sync Queue"]
         PWA <--> IDB
         PWA <--> SW
     end

@@ -27,7 +27,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW v5] Pre-caching static assets');
+      console.log('[SW v6] Pre-caching static assets');
       return cache.addAll(STATIC_ASSETS).catch((e) => console.log('[SW] Cache warning:', e));
     })
   );
@@ -39,7 +39,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => {
-        console.log('[SW v5] Deleting old cache:', k);
+        console.log('[SW v6] Deleting old cache:', k);
         return caches.delete(k);
       }))
     ).then(() => self.clients.claim())
@@ -83,7 +83,7 @@ self.addEventListener('sync', (event) => {
 //  Works even when app is closed / screen locked
 // ══════════════════════════════════════════════════════════════════════════
 self.addEventListener('push', (event) => {
-  console.log('[SW v5] Push received');
+  console.log('[SW v6] Push received');
 
   let payload = {
     title: '🌾 KrishiSetu Alert',
@@ -153,7 +153,7 @@ self.addEventListener('notificationclick', (event) => {
 
 // ── Notification close (analytics hook) ───────────────────────────────────
 self.addEventListener('notificationclose', (event) => {
-  console.log('[SW v5] Notification dismissed by user');
+  console.log('[SW v6] Notification dismissed by user');
 });
 
 // ── IndexedDB helpers for offline queue ────────────────────────────────────
@@ -171,11 +171,11 @@ async function flushOfflineQueue() {
       });
       if (response.ok) {
         await deleteFromStore(db, 'syncQueue', item.id);
-        console.log('[SW v5] Synced item:', item.id);
+        console.log('[SW v6] Synced item:', item.id);
       }
     }
   } catch (e) {
-    console.log('[SW v5] Queue sync error:', e);
+    console.log('[SW v6] Queue sync error:', e);
   }
 }
 
