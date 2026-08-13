@@ -1,5 +1,5 @@
-// KrishiSetu — Service Worker v3 (Network-First for fresh dev reloads)
-const CACHE_NAME = 'krishisetu-v3';
+// KrishiSetu — Service Worker v5 (Network-First + Real Web Push)
+const CACHE_NAME = 'krishisetu-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -21,48 +21,43 @@ const STATIC_ASSETS = [
   '/js/db.js',
 ];
 
-// Install — pre-cache static assets
+// ── Install — pre-cache static assets ─────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW v3] Pre-caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((e) => console.log('[SW] Cache add warning:', e));
+      console.log('[SW v5] Pre-caching static assets');
+      return cache.addAll(STATIC_ASSETS).catch((e) => console.log('[SW] Cache warning:', e));
     })
   );
   self.skipWaiting();
 });
 
-// Activate — immediately delete ALL older caches (v1, v2) and take control of all clients
+// ── Activate — delete old caches, claim clients ────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => {
-        console.log('[SW v3] Deleting old cache:', k);
+        console.log('[SW v5] Deleting old cache:', k);
         return caches.delete(k);
       }))
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch — Network-First for ALL requests (gets fresh files when connected, falls back to cache when offline)
+// ── Fetch — Network-First ──────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // If valid response, update cache in background
         if (response && response.status === 200 && response.type === 'basic') {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
       })
       .catch(() => {
-        // Offline fallback: match from cache
         return caches.match(event.request).then((cached) => {
           if (cached) return cached;
           if (event.request.headers.get('accept')?.includes('text/html')) {
@@ -74,20 +69,98 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Background Sync — flush offline queue when reconnected
+// ── Background Sync — flush offline queue on reconnect ────────────────────
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-offline-queue') {
     event.waitUntil(flushOfflineQueue());
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════════
+//  WEB PUSH — Receive & display native OS notification
+//  Works even when app is closed / screen locked
+// ══════════════════════════════════════════════════════════════════════════
+self.addEventListener('push', (event) => {
+  console.log('[SW v5] Push received');
+
+  let payload = {
+    title: '🌾 KrishiSetu Alert',
+    body: 'New farm advisory available. Tap to view.',
+    url: '/advisory.html',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    tag: 'krishisetu-alert',
+    vibrate: [200, 100, 200],
+  };
+
+  // Parse JSON payload from server
+  if (event.data) {
+    try {
+      payload = { ...payload, ...JSON.parse(event.data.text()) };
+    } catch (e) {
+      payload.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: payload.body,
+    icon: payload.icon,
+    badge: payload.badge,
+    tag: payload.tag,
+    vibrate: payload.vibrate,
+    data: { url: payload.url },
+    actions: [
+      { action: 'view', title: 'View Advisory' },
+      { action: 'dismiss', title: 'Dismiss' },
+    ],
+    requireInteraction: false,    // auto-dismiss after ~4s on Android
+    silent: false,
+    timestamp: Date.now(),
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, options)
+  );
+});
+
+// ── Notification click — open / focus advisory page ───────────────────────
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  // action buttons
+  if (event.action === 'dismiss') return;
+
+  const targetUrl = event.notification.data?.url || '/advisory.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus existing tab if already open
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      // Otherwise open new tab
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// ── Notification close (analytics hook) ───────────────────────────────────
+self.addEventListener('notificationclose', (event) => {
+  console.log('[SW v5] Notification dismissed by user');
+});
+
+// ── IndexedDB helpers for offline queue ────────────────────────────────────
 async function flushOfflineQueue() {
   try {
     const db = await openDB();
     const tx = db.transaction('syncQueue', 'readwrite');
     const store = tx.objectStore('syncQueue');
     const items = await getAllFromStore(store);
-
     for (const item of items) {
       const response = await fetch(item.url, {
         method: item.method,
@@ -96,31 +169,13 @@ async function flushOfflineQueue() {
       });
       if (response.ok) {
         await deleteFromStore(db, 'syncQueue', item.id);
-        console.log('[SW v3] Synced item:', item.id);
+        console.log('[SW v5] Synced item:', item.id);
       }
     }
   } catch (e) {
-    console.log('[SW v3] Queue sync error:', e);
+    console.log('[SW v5] Queue sync error:', e);
   }
 }
-
-// Push notification click event handler
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const targetUrl = event.notification.data?.url || '/advisory.html';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
-  );
-});
 
 function openDB() {
   return new Promise((resolve, reject) => {

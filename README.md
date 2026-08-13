@@ -9,12 +9,12 @@
 **KrishiSetu** bridges the digital divide for smallholder farmers across rural India. Operating seamlessly on 2G/3G networks and completely offline, KrishiSetu delivers hyper-local crop risk advisories, heat-stress labor scheduling, live market prices, and DPDP-compliant data governance.
 
 ### ⭐ Key Technical Differentiators
-1. **7-Layer Decoupled Architecture**: From Layer 0 (Offline IndexedDB PWA) to Layer 6 (DPDP Cryptographic Compliance).
+1. **7-Layer Decoupled Architecture**: From Layer 0 (Offline IndexedDB PWA + VAPID Web Push) to Layer 6 (DPDP Cryptographic Compliance + Supabase PostgreSQL).
 2. **Cross-Domain Intelligence Engine**:
    - *Heat Stress → Labor Safety*: Automatically reschedules field working hours when temperatures & humidity cross safety thresholds.
-   - *Pest Log → Insurance Evidence*: Converts advisory pest events into verifiable evidence trails for crop insurance claims.
-3. **Offline-First PWA (Layer 0)**: Full functionality offline using IndexedDB caching, Service Worker v3 background sync, and native Web Push notifications.
-4. **DPDP Act 2023 Compliance**: Zero plain-text PII storage; phone numbers are hashed using `bcrypt`, with immutable audit logging and a 30-day right-to-erasure workflow.
+   - *Pest Log → Insurance Evidence*: Converts advisory pest events into verifiable evidence trails in Supabase for crop insurance claims.
+3. **Offline-First PWA & Web Push (Layer 0)**: Full functionality offline using IndexedDB caching, Service Worker v5 background sync, and native Web Push notifications via VAPID.
+4. **Supabase PostgreSQL & DPDP Compliance**: Real cloud database with zero plain-text PII storage; phone numbers are bcrypt-hashed, with immutable audit logging and 30-day right-to-erasure.
 5. **Role-Based Delivery**: Tailored mobile PWA experience for farmers + macro-level Leaflet heatmap dashboard for Agri-Extension Officers.
 
 ---

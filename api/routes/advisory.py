@@ -1,7 +1,8 @@
 """
-KrishiSetu — API Routes: AI Advisory (full pipeline)
+KrishiSetu — API Routes: AI Advisory (full pipeline + Push Trigger)
+Automatically fires Web Push when drought > 60 OR pest > 70.
 """
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -20,7 +21,6 @@ class AdvisoryRequest(BaseModel):
     lat: float = 26.14
     lon: float = 91.74
     language: str = "English"
-    # Weather inputs (if not fetching live)
     precip_30d_mm: float = 60.0
     precip_7d_mm: float = 15.0
     avg_temp_c: float = 28.0
@@ -33,20 +33,21 @@ class AdvisoryRequest(BaseModel):
 
 
 @router.post("/generate")
-async def generate_full_advisory(req: AdvisoryRequest):
+async def generate_full_advisory(req: AdvisoryRequest, background_tasks: BackgroundTasks):
     """
     Full advisory pipeline:
-    1. Run streaming engine (normalize → risk score)
-    2. Evaluate sowing window
-    3. Fetch mandi price
-    4. Generate Gemini advisory
+    1. Streaming engine → normalize → risk score
+    2. Sowing window evaluation
+    3. Mandi price fetch (AGMARKNET)
+    4. Gemini 2.5 Flash advisory generation
+    5. [NEW] Auto-push if high/critical risk detected
     """
     raw_record = req.model_dump()
 
-    # Step 1: Streaming pipeline — normalize + score risks
+    # Step 1: Streaming pipeline
     scored = await process_record(raw_record)
     drought = scored["risk"]["drought"]
-    pest = scored["risk"]["pest"]
+    pest    = scored["risk"]["pest"]
 
     # Step 2: Sowing window
     sowing = evaluate_sowing_window(
@@ -80,6 +81,16 @@ async def generate_full_advisory(req: AdvisoryRequest):
         mandi_price=mandi_str,
     )
 
+    # Step 5: Auto-push notification on high/critical risk
+    if req.farmer_id and (drought["score"] > 60 or pest["score"] > 70):
+        background_tasks.add_task(
+            _trigger_risk_push,
+            farmer_id=req.farmer_id,
+            crop=req.crop,
+            drought_score=drought["score"],
+            pest_score=pest["score"],
+        )
+
     return {
         "farmer_id": req.farmer_id,
         "crop": req.crop,
@@ -89,8 +100,23 @@ async def generate_full_advisory(req: AdvisoryRequest):
         "mandi": mandi_data,
         "advisory": advisory["advisory"],
         "cached": advisory["cached"],
-        "pipeline": ["normalize", "risk_score", "sowing_eval", "mandi_fetch", "gemini_advisory"],
+        "push_triggered": req.farmer_id is not None and (drought["score"] > 60 or pest["score"] > 70),
+        "pipeline": ["normalize", "risk_score", "sowing_eval", "mandi_fetch", "gemini_advisory", "push_check"],
     }
+
+
+async def _trigger_risk_push(farmer_id: str, crop: str, drought_score: int, pest_score: int):
+    """Background task: send push notification for high-risk advisory."""
+    try:
+        from api.routes.push import send_risk_alert
+        await send_risk_alert(
+            farmer_id=farmer_id,
+            crop=crop,
+            drought=drought_score,
+            pest=pest_score,
+        )
+    except Exception:
+        pass  # Push is best-effort
 
 
 class TTSRequest(BaseModel):

@@ -3,98 +3,154 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-  <meta name="theme-color" content="#1E4D35"/>
-  <meta name="description" content="KrishiSetu — AI-generated farm advisory for your crop, location and weather."/>
-  <title>KrishiSetu — Advisory</title>
+  <meta name="theme-color" content="#1A3D28"/>
+  <meta name="description" content="KrishiSetu Advisory — AI-generated, crop-specific farm advisory with drought, pest and sowing guidance."/>
+  <title>KrishiSetu — AI Advisory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/app.css?v=3"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=4"/>
 </head>
 <body>
 
-<div id="offline-bar" class="offline-bar hidden">📵 Offline — showing cached advisory</div>
+<div id="offline-bar" class="offline-bar hidden">Offline — showing cached advisory</div>
 
-<div class="mobile-wrap">
+<div class="app-shell">
 
+  <!-- Topbar -->
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-icon">🤖</div>
-      <div>
-        <span class="topbar-title">Advisory</span>
-        <span class="topbar-sub">AI-generated · crop-specific</span>
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/>
+        </svg>
+      </div>
+      <div class="topbar-text">
+        <span class="topbar-name">AI Advisory</span>
+        <span class="topbar-tagline">Crop-specific · Powered by Gemini</span>
       </div>
     </div>
-    <div class="topbar-right">
-      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
+    <div class="topbar-actions">
+      <button class="tb-btn" onclick="openLangSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </button>
     </div>
   </header>
 
   <div class="page-content">
 
-    <!-- Advisory Header Card -->
-    <div class="adv-header fade">
-      <div class="adv-header-top">
-        <div>
-          <div class="adv-eyebrow">Gemini 2.5 Flash · <span id="adv-lang-name">English</span></div>
-          <div class="adv-crop" id="adv-crop">Loading…</div>
-          <div class="adv-date" id="adv-date">—</div>
+    <!-- Advisory Hero Card -->
+    <div class="adv-hero fade">
+      <div class="adv-hero-content">
+        <div class="adv-top">
+          <div>
+            <div class="adv-eyebrow">Gemini 2.5 Flash · <span id="adv-lang-name">English</span></div>
+            <div class="adv-crop-name" id="adv-crop">Loading…</div>
+            <div class="adv-meta" id="adv-date">—</div>
+          </div>
+          <button class="adv-refresh-btn" onclick="loadAdvisory()" id="adv-refresh-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Refresh
+          </button>
         </div>
-        <button class="adv-refresh" onclick="loadAdvisory()" id="adv-refresh-btn">↻ Refresh</button>
-      </div>
-      <div class="adv-pills" id="adv-pills">
-        <span class="adv-pill">Loading…</span>
+        <div class="adv-pills" id="adv-pills">
+          <span class="adv-pill">Loading…</span>
+        </div>
       </div>
     </div>
 
     <!-- Main Advisory Text -->
-    <div class="adv-text-card">
-      <div class="adv-text-bar">
-        <div class="adv-text-dot"></div>
-        <span class="adv-text-lbl">Today's Advisory</span>
-        <span id="adv-cached-tag" class="adv-text-cached hidden">CACHED</span>
+    <div class="adv-card">
+      <div class="adv-card-bar">
+        <div class="adv-live-dot"></div>
+        <span class="adv-card-label">Today's Advisory</span>
+        <span id="adv-cached-tag" class="adv-cached-tag hidden">CACHED</span>
       </div>
       <div id="adv-body" class="adv-body">
-        <div class="loading-row"><div class="spinner"></div>Generating your personalized advisory…</div>
+        <div class="loading-row">
+          <div class="spinner"></div>
+          Generating your personalised advisory…
+        </div>
       </div>
       <div class="adv-actions">
-        <button class="btn btn-outline btn-sm" id="tts-btn" onclick="playAudio()" disabled>🔊 Listen</button>
-        <button class="btn btn-outline btn-sm" onclick="logInsuranceEvent()">📋 Log Evidence</button>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openLangSheet()">🌐 <span id="adv-lang-badge">EN</span></button>
+        <button class="btn btn-outline btn-sm" id="tts-btn" onclick="playAudio()" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          Listen
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="logInsuranceEvent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          Log Evidence
+        </button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openLangSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span id="adv-lang-badge">EN</span>
+        </button>
       </div>
     </div>
 
     <!-- Risk Breakdown -->
     <div>
-      <div class="section-label">Risk Breakdown</div>
+      <div class="sec-head">
+        <div class="sec-title">Risk Breakdown</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
 
-      <div style="display:flex;flex-direction:column;gap:10px;">
-
-        <div class="risk-detail">
-          <div class="rd-left">
-            <div class="rd-name">💧 Drought Risk</div>
-            <div class="rd-level" id="rd-drought-level">—</div>
-            <div class="rd-progress"><div class="rd-progress-fill" id="rd-drought-bar" style="width:0%;background:var(--forest-500)"></div></div>
-            <div class="rd-hint" id="rd-drought-hint">—</div>
+        <!-- Drought -->
+        <div class="risk-detail-row">
+          <div class="rdr-left">
+            <div class="rdr-label">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M12 2v20M8 8c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
+              Drought Risk
+            </div>
+            <div class="rdr-level" id="rd-drought-level">—</div>
+            <div class="rdr-bar"><div class="rdr-bar-fill" id="rd-drought-bar" style="width:0%;background:var(--g-500)"></div></div>
+            <div class="rdr-hint" id="rd-drought-hint">—</div>
           </div>
-          <div class="rd-circle rdc-low" id="rd-drought-circle">—</div>
+          <div class="rdr-circle rdc-low" id="rd-drought-circle">—</div>
         </div>
 
-        <div class="risk-detail">
-          <div class="rd-left">
-            <div class="rd-name">🐛 Pest Risk</div>
-            <div class="rd-level" id="rd-pest-level">—</div>
-            <div class="rd-progress"><div class="rd-progress-fill" id="rd-pest-bar" style="width:0%;background:var(--amber-500)"></div></div>
-            <div class="rd-hint" id="rd-pest-hint">—</div>
+        <!-- Pest -->
+        <div class="risk-detail-row">
+          <div class="rdr-left">
+            <div class="rdr-label">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="4"/></svg>
+              Pest Risk
+            </div>
+            <div class="rdr-level" id="rd-pest-level">—</div>
+            <div class="rdr-bar"><div class="rdr-bar-fill" id="rd-pest-bar" style="width:0%;background:var(--a-500)"></div></div>
+            <div class="rdr-hint" id="rd-pest-hint">—</div>
           </div>
-          <div class="rd-circle rdc-low" id="rd-pest-circle">—</div>
+          <div class="rdr-circle rdc-low" id="rd-pest-circle">—</div>
         </div>
 
+        <!-- Sowing -->
         <div class="sow-card">
-          <div class="sow-icon" id="sow-icon-bg" style="background:var(--forest-50)">🌱</div>
+          <div class="sow-icon-box" id="sow-icon-bg" style="background:var(--g-50)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--g-600)">
+              <path d="M12 22V12M12 12C12 7 16 3 21 3s0 8-4 9M12 12C12 7 8 3 3 3s0 8 4 9"/>
+            </svg>
+          </div>
           <div>
-            <div class="sow-name">Sowing Window</div>
+            <div class="sow-label">Sowing Window</div>
             <div class="sow-rec" id="sow-rec">—</div>
-            <div class="sow-detail" id="sow-detail">—</div>
+            <div class="sow-hint" id="sow-detail">—</div>
           </div>
         </div>
 
@@ -103,30 +159,54 @@
 
     <!-- Field Work / Labor Advisory -->
     <div>
-      <div class="section-label">Field Work Safety</div>
-      <div class="labor-card labor-card-warn" id="labor-card">
-        <div class="labor-top">
-          <span style="font-size:1.2rem" id="labor-icon">⚒️</span>
-          <span class="labor-title" id="labor-title" style="color:var(--amber-700)">Heat Stress Advisory</span>
+      <div class="sec-head">
+        <div class="sec-title">Field Work Safety</div>
+      </div>
+      <div class="labor-banner labor-banner-warn" id="labor-card">
+        <div class="labor-banner-head">
+          <div class="labor-banner-icon" id="labor-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--a-700)">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </div>
+          <div class="labor-banner-title" id="labor-title" style="color:var(--a-800)">Heat Stress Advisory</div>
         </div>
-        <div class="labor-body" id="labor-body">Loading…</div>
-        <div class="labor-hours" id="labor-hours-tag" style="background:var(--amber-700)">—</div>
+        <div class="labor-banner-body" id="labor-body">Loading field-work safety…</div>
+        <div class="labor-hours-tag" id="labor-hours-tag" style="background:var(--a-700)">—</div>
       </div>
     </div>
 
   </div>
 
+  <!-- Bottom Tabbar -->
   <nav class="tabbar">
-    <a href="/home.html"     class="tab"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
-    <a href="/advisory.html" class="tab active"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
-    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
-    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+    <a href="/home.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-lbl">Home</span>
+    </a>
+    <a href="/advisory.html" class="tab active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="tab-lbl">Advisory</span>
+    </a>
+    <a href="/market.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="tab-lbl">Market</span>
+    </a>
+    <a href="/profile.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="tab-lbl">Profile</span>
+    </a>
   </nav>
 
 </div>
 
+<!-- Language Sheet -->
 <div id="lang-sheet" class="sheet-overlay hidden" onclick="if(event.target===this)closeLangSheet()">
-  <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Language / भाषा</div><div class="lang-grid" id="lang-grid"></div></div>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Language / भाषा</div>
+    <div class="lang-grid" id="lang-grid"></div>
+  </div>
 </div>
 <div id="toast" class="toast hidden"></div>
 

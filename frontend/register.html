@@ -3,69 +3,107 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-  <meta name="theme-color" content="#1E4D35"/>
-  <meta name="description" content="KrishiSetu — Register as a farmer to get personalized AI advisories."/>
-  <title>KrishiSetu — Register</title>
+  <meta name="theme-color" content="#1A3D28"/>
+  <meta name="description" content="KrishiSetu — Create your farmer profile. Get personalised AI advisories and build an insurance evidence trail."/>
+  <title>KrishiSetu — Create Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/app.css?v=3"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=4"/>
 </head>
 <body>
 
-<div class="mobile-wrap">
+<div class="app-shell">
 
+  <!-- Topbar -->
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-icon">📝</div>
-      <div>
-        <span class="topbar-title">Create Profile</span>
-        <span class="topbar-sub">Takes 1 minute</span>
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="topbar-text">
+        <span class="topbar-name">Create Profile</span>
+        <span class="topbar-tagline">Takes about 1 minute</span>
       </div>
     </div>
-    <div class="topbar-right">
-      <a href="/" class="topbar-btn topbar-btn-icon">←</a>
+    <div class="topbar-actions">
+      <a href="/" class="tb-btn" title="Back to home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </a>
     </div>
   </header>
 
-  <div class="page-content">
+  <div class="page-content no-tab">
 
-    <!-- Header -->
-    <div style="text-align:center;padding:10px 0 4px">
-      <div style="font-size:2.8rem;margin-bottom:10px">👨‍🌾</div>
-      <h1 style="font-size:1.25rem;font-weight:900;color:var(--ink-900);margin-bottom:6px">Set Up Your Farm Profile</h1>
-      <p style="font-size:.85rem;color:var(--ink-500);line-height:1.6">Your data is encrypted and protected under India's DPDP Act 2023.</p>
+    <!-- Registration hero -->
+    <div class="reg-hero fade">
+      <div class="reg-hero-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22V12M12 12C12 7 16 3 21 3s0 8-4 9M12 12C12 7 8 3 3 3s0 8 4 9"/>
+          <path d="M12 22c-3-1-6-4-6-9M12 22c3-1 6-4 6-9"/>
+        </svg>
+      </div>
+      <div>
+        <div class="reg-hero-title">Set Up Your Farm Profile</div>
+        <div class="reg-hero-sub">Your data is encrypted and protected under India's <strong>DPDP Act 2023</strong>. No PII stored in plain text.</div>
+      </div>
     </div>
 
     <!-- Registration Form -->
     <div class="card fade">
+
+      <!-- Step indicators -->
+      <div class="step-indicator" style="margin-bottom:18px">
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot done"></div>
+        <div class="step-dot"></div>
+      </div>
+
       <form id="reg-form" onsubmit="submitRegistration(event)">
 
         <div class="form-group">
-          <label class="form-label" for="fn-name">Full Name *</label>
-          <input class="form-input" type="text" id="fn-name" placeholder="e.g. Ramesh Kalita" required autocomplete="name"/>
+          <label class="form-label" for="fn-name">Full Name <span style="color:var(--s-500)">*</span></label>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            <input class="form-input" type="text" id="fn-name" placeholder="e.g. Ramesh Kalita" required autocomplete="name"/>
+          </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="fn-phone">Phone Number *</label>
-          <input class="form-input" type="tel" id="fn-phone" placeholder="+91 98765 43210" required autocomplete="tel"/>
-          <div class="form-hint">🔒 Stored as one-way hash — not readable by anyone</div>
+          <label class="form-label" for="fn-phone">Phone Number <span style="color:var(--s-500)">*</span></label>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <input class="form-input" type="tel" id="fn-phone" placeholder="+91 98765 43210" required autocomplete="tel"/>
+          </div>
+          <div class="form-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px;color:var(--g-500)"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Stored as one-way bcrypt hash — not readable by anyone
+          </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="fn-crop">Primary Crop *</label>
+          <label class="form-label" for="fn-crop">Primary Crop <span style="color:var(--s-500)">*</span></label>
           <select class="form-select" id="fn-crop" required>
             <option value="">— Select your main crop —</option>
-            <option value="rice">🌾 Rice (Dhan)</option>
-            <option value="wheat">🌿 Wheat (Gehun)</option>
-            <option value="maize">🌽 Maize (Makka)</option>
-            <option value="cotton">🪴 Cotton (Kapas)</option>
-            <option value="mustard">🟡 Mustard (Sarson)</option>
-            <option value="soybean">🫘 Soybean</option>
+            <option value="rice">Rice (Dhan)</option>
+            <option value="wheat">Wheat (Gehun)</option>
+            <option value="maize">Maize (Makka)</option>
+            <option value="cotton">Cotton (Kapas)</option>
+            <option value="mustard">Mustard (Sarson)</option>
+            <option value="soybean">Soybean</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="fn-state">State *</label>
+          <label class="form-label" for="fn-state">State <span style="color:var(--s-500)">*</span></label>
           <select class="form-select" id="fn-state" required>
             <option value="Assam">Assam</option>
             <option value="West Bengal">West Bengal</option>
@@ -80,29 +118,43 @@
 
         <div class="form-group">
           <label class="form-label" for="fn-village">Village Code</label>
-          <input class="form-input" type="text" id="fn-village" placeholder="e.g. ASM-KAM-001" value="ASM-KAM-001"/>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4zM8 2v16M16 6v16"/>
+            </svg>
+            <input class="form-input" type="text" id="fn-village" placeholder="e.g. ASM-KAM-001" value="ASM-KAM-001"/>
+          </div>
           <div class="form-hint">Ask your local Agri-Extension Officer for this code</div>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="fn-area">Farm Area (acres)</label>
-          <input class="form-input" type="number" id="fn-area" placeholder="e.g. 2.5" min="0.1" step="0.1" value="2.0"/>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>
+            </svg>
+            <input class="form-input" type="number" id="fn-area" placeholder="e.g. 2.5" min="0.1" step="0.1" value="2.0"/>
+          </div>
         </div>
 
+        <!-- Consent -->
         <div class="consent-box">
           <input type="checkbox" id="fn-consent" required/>
           <label for="fn-consent">
-            I consent to KrishiSetu using my crop and location data to generate farm advisories, mandi price alerts, and risk notifications.<span class="tag-dpdp">DPDP</span>
+            I consent to KrishiSetu using my crop and location data to generate farm advisories, mandi price alerts, and risk notifications. <span class="tag-dpdp">DPDP</span>
           </label>
         </div>
 
-        <button type="submit" class="btn btn-forest btn-full btn-lg" id="reg-btn">
-          <span id="reg-btn-text">✅ Register &amp; Get Advisory</span>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="reg-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          <span id="reg-btn-text">Register &amp; Get Advisory</span>
         </button>
 
-        <p style="text-align:center;font-size:.72rem;color:var(--ink-300);margin-top:12px">
-          By registering you agree to our <a href="#" style="color:var(--forest-700)">Privacy Policy</a>.
-          Right-to-erasure available in Profile page.
+        <p style="text-align:center;font-size:.72rem;color:var(--ink-4);margin-top:13px;line-height:1.6">
+          By registering you agree to our <a href="#" style="color:var(--g-700);font-weight:700">Privacy Policy</a>.<br>
+          Right-to-erasure is available in the Profile page.
         </p>
       </form>
     </div>

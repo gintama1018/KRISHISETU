@@ -3,29 +3,39 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-  <meta name="theme-color" content="#1E4D35"/>
-  <meta name="description" content="KrishiSetu Market — Live mandi prices from AGMARKNET for your crop."/>
+  <meta name="theme-color" content="#1A3D28"/>
+  <meta name="description" content="KrishiSetu Market — Live mandi prices from AGMARKNET for your crop and state."/>
   <title>KrishiSetu — Market Prices</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/app.css?v=3"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=4"/>
 </head>
 <body>
 
-<div id="offline-bar" class="offline-bar hidden">📵 Offline — showing last known prices</div>
+<div id="offline-bar" class="offline-bar hidden">Offline — showing last known prices</div>
 
-<div class="mobile-wrap">
+<div class="app-shell">
 
+  <!-- Topbar -->
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-icon">💰</div>
-      <div>
-        <span class="topbar-title">Market Prices</span>
-        <span class="topbar-sub">AGMARKNET · data.gov.in</span>
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="topbar-text">
+        <span class="topbar-name">Market Prices</span>
+        <span class="topbar-tagline">AGMARKNET · data.gov.in</span>
       </div>
     </div>
-    <div class="topbar-right">
-      <button class="topbar-btn topbar-btn-icon" onclick="loadPrices()">↻</button>
+    <div class="topbar-actions">
+      <button class="tb-btn" onclick="loadPrices()" title="Refresh prices">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -33,69 +43,107 @@
 
     <!-- Commodity Chips -->
     <div>
-      <div class="section-label">Commodity</div>
-      <div class="chip-row" id="commodity-chips">
-        <button class="chip active" onclick="selectCommodity('Rice',this)">🌾 Rice</button>
-        <button class="chip" onclick="selectCommodity('Wheat',this)">🌿 Wheat</button>
-        <button class="chip" onclick="selectCommodity('Maize',this)">🌽 Maize</button>
-        <button class="chip" onclick="selectCommodity('Cotton',this)">🪴 Cotton</button>
-        <button class="chip" onclick="selectCommodity('Mustard',this)">🟡 Mustard</button>
-        <button class="chip" onclick="selectCommodity('Soybean',this)">🫘 Soybean</button>
+      <div class="sec-head">
+        <div class="sec-title">Commodity</div>
+      </div>
+      <div class="crop-chips" id="commodity-chips">
+        <button class="chip active" onclick="selectCommodity('Rice',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 16 3 21 3s0 8-4 9"/></svg>
+          Rice
+        </button>
+        <button class="chip" onclick="selectCommodity('Wheat',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 8 3 3 3s0 8 4 9"/></svg>
+          Wheat
+        </button>
+        <button class="chip" onclick="selectCommodity('Maize',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M8 5c0 4 2 7 4 9M16 5c0 4-2 7-4 9"/></svg>
+          Maize
+        </button>
+        <button class="chip" onclick="selectCommodity('Cotton',this)">Cotton</button>
+        <button class="chip" onclick="selectCommodity('Mustard',this)">Mustard</button>
+        <button class="chip" onclick="selectCommodity('Soybean',this)">Soybean</button>
       </div>
     </div>
 
     <!-- Price Hero -->
     <div class="price-hero fade" id="price-hero">
-      <div class="ph-commodity" id="ph-commodity">RICE</div>
-      <div class="ph-price" id="ph-price">₹—</div>
-      <div class="ph-unit">per quintal · Modal Price</div>
-      <div class="ph-trend" id="ph-trend">
-        <span id="ph-trend-icon">📊</span>
-        <span id="ph-trend-text">Loading…</span>
+      <div class="ph-inner">
+        <div class="ph-crop" id="ph-commodity">RICE</div>
+        <div class="ph-price" id="ph-price">₹—</div>
+        <div class="ph-unit">per quintal · Modal Price</div>
+        <div class="ph-trend" id="ph-trend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="ph-trend-icon-svg"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span id="ph-trend-text">Loading…</span>
+        </div>
       </div>
     </div>
 
     <!-- State Filter -->
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:.78rem;font-weight:700;color:var(--ink-500);white-space:nowrap">State:</span>
-      <select class="form-select" id="state-select" style="flex:1" onchange="loadPrices()">
-        <option value="Assam">Assam</option>
-        <option value="West Bengal">West Bengal</option>
-        <option value="Bihar">Bihar</option>
-        <option value="Odisha">Odisha</option>
-        <option value="Maharashtra">Maharashtra</option>
-        <option value="Punjab">Punjab</option>
-        <option value="Gujarat">Gujarat</option>
-      </select>
+    <div class="state-row">
+      <span class="state-label">State</span>
+      <div style="flex:1;position:relative">
+        <select class="form-select" id="state-select" onchange="loadPrices()">
+          <option value="Assam">Assam</option>
+          <option value="West Bengal">West Bengal</option>
+          <option value="Bihar">Bihar</option>
+          <option value="Odisha">Odisha</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Punjab">Punjab</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Rajasthan">Rajasthan</option>
+        </select>
+      </div>
     </div>
 
     <!-- Mandi List -->
     <div>
-      <div class="section-label" style="margin-bottom:10px">
-        Mandi Prices
-        <span style="font-size:.68rem;color:var(--ink-300)" id="price-count"></span>
+      <div class="sec-head">
+        <div class="sec-title">Mandi Prices</div>
+        <span style="font-size:.68rem;color:var(--ink-4)" id="price-count"></span>
       </div>
       <div class="mandi-list" id="mandi-list">
-        <div class="loading-row"><div class="spinner"></div>Fetching prices…</div>
+        <div class="loading-row">
+          <div class="spinner"></div>
+          Fetching prices from AGMARKNET…
+        </div>
       </div>
     </div>
 
-    <!-- Price explanation -->
-    <div class="notice notice-good">
-      <span class="notice-icon">ℹ️</span>
+    <!-- Info notice -->
+    <div class="notice notice-info">
+      <div class="notice-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
       <div>
         <div class="notice-title">About these prices</div>
-        <div class="notice-body">Modal price = most common traded price at the mandi on the latest available date. Source: AGMARKNET open API.</div>
+        <div class="notice-body">Modal price = most commonly traded price at the mandi on the latest available date. Source: AGMARKNET open API (data.gov.in).</div>
       </div>
     </div>
 
   </div>
 
+  <!-- Bottom Tabbar -->
   <nav class="tabbar">
-    <a href="/home.html"     class="tab"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
-    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
-    <a href="/market.html"   class="tab active"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
-    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
+    <a href="/home.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-lbl">Home</span>
+    </a>
+    <a href="/advisory.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="tab-lbl">Advisory</span>
+    </a>
+    <a href="/market.html" class="tab active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="tab-lbl">Market</span>
+    </a>
+    <a href="/profile.html" class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="tab-lbl">Profile</span>
+    </a>
   </nav>
 
 </div>

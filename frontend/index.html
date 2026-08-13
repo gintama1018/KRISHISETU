@@ -3,97 +3,156 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-  <meta name="theme-color" content="#1E4D35"/>
-  <meta name="description" content="KrishiSetu — AI-powered farm advisory for rural India. Get started free."/>
+  <meta name="theme-color" content="#1A3D28"/>
+  <meta name="description" content="KrishiSetu — AI-powered farm advisories in 8 Indian languages. Works on 2G, even offline. DPDP-compliant."/>
   <title>KrishiSetu — Smart Farm Advisory</title>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/css/app.css?v=3"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=4"/>
 </head>
 <body>
 
-<div id="offline-bar" class="offline-bar hidden">📵 You're offline — data saved locally</div>
+<div id="offline-bar" class="offline-bar hidden">No internet — cached data shown</div>
 <div id="install-bar" class="install-bar hidden">
-  <span style="flex:1">📲 Install KrishiSetu for offline use</span>
-  <button onclick="installPWA()" class="btn-forest" style="background:var(--forest-800);color:#fff">Install</button>
-  <button onclick="document.getElementById('install-bar').classList.add('hidden')" style="background:none;border:none;color:var(--ink-300);font-size:1.1rem">✕</button>
+  <span style="flex:1;font-weight:600;color:var(--ink-2)">Install KrishiSetu for offline use</span>
+  <button onclick="installPWA()" style="background:var(--g-800);color:#fff;border:none;border-radius:var(--r4);padding:7px 14px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">Install</button>
+  <button onclick="document.getElementById('install-bar').classList.add('hidden')" style="background:none;border:none;color:var(--ink-4);font-size:1.1rem;cursor:pointer;line-height:1">✕</button>
 </div>
 
-<div class="mobile-wrap">
+<div class="app-shell">
 
-  <!-- Topbar -->
+  <!-- Top Bar -->
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-icon">🌾</div>
-      <div>
-        <span class="topbar-title">KrishiSetu</span>
-        <span class="topbar-sub">कृषि सेतु</span>
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3s1.5 1 3 3c-2 2.5-2 6 0 8.5s6 3.5 9 2M21 21s-1.5-1-3-3c2-2.5 2-6 0-8.5S12 6 9 7"/>
+          <line x1="3" y1="21" x2="21" y2="3"/>
+        </svg>
+      </div>
+      <div class="topbar-text">
+        <span class="topbar-name">KrishiSetu</span>
+        <span class="topbar-tagline">कृषि सेतु · Farm Intelligence</span>
       </div>
     </div>
-    <div class="topbar-right">
-      <button class="topbar-btn topbar-btn-icon" onclick="openLangSheet()">🌐</button>
-      <a href="/dashboard.html" class="topbar-btn topbar-btn-icon" title="Officer Dashboard">📊</a>
+    <div class="topbar-actions">
+      <button class="tb-btn" onclick="openLangSheet()" title="Select Language" id="lang-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      </button>
+      <a href="/dashboard.html" class="tb-btn" title="Officer Dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+      </a>
     </div>
   </header>
 
   <!-- Page Content -->
-  <div class="page-content">
+  <div class="page-content no-tab">
 
-    <!-- ONBOARDING STATE (not registered) -->
-    <div id="onboard-state">
-      <div class="onboard-hero">
-        <div class="ob-emoji">🌾</div>
-        <h1 class="ob-title">KrishiSetu</h1>
-        <p class="ob-sub">AI-powered farm advisories in 8 Indian languages — works on 2G, even offline.</p>
+    <!-- Landing Hero -->
+    <div class="landing-hero fade">
+      <div class="lh-inner">
+        <div class="lh-logo-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22V12M12 12C12 7 16 3 21 3s0 8-4 9M12 12C12 7 8 3 3 3s0 8 4 9"/>
+            <path d="M12 22c-3-1-6-4-6-9M12 22c3-1 6-4 6-9"/>
+          </svg>
+        </div>
+        <h1 class="lh-title">KrishiSetu</h1>
+        <div class="lh-hindi">कृषि सेतु — Bridging Farmers to Intelligence</div>
+        <p class="lh-desc">AI-powered farm advisories in 8 Indian languages. Drought, pest & sowing guidance. Works on 2G, even offline.</p>
       </div>
+    </div>
 
-      <div class="feature-list">
-        <div class="feature-row">
-          <span class="feat-icon">🤖</span>
-          <div>
-            <div class="feat-title">Gemini AI Advisory</div>
-            <div class="feat-desc">Crop-specific drought, pest & sowing guidance</div>
-          </div>
+    <!-- Feature List -->
+    <div class="feature-card">
+      <div class="feature-item">
+        <div class="fi-icon" style="background:var(--g-50)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--g-600)">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            <path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 7.76a6 6 0 0 0 0 8.49"/>
+          </svg>
         </div>
-        <div class="feature-row">
-          <span class="feat-icon">💰</span>
-          <div>
-            <div class="feat-title">Live Mandi Prices</div>
-            <div class="feat-desc">AGMARKNET data with trend analysis</div>
-          </div>
-        </div>
-        <div class="feature-row">
-          <span class="feat-icon">📵</span>
-          <div>
-            <div class="feat-title">Works Offline</div>
-            <div class="feat-desc">Syncs automatically when reconnected</div>
-          </div>
-        </div>
-        <div class="feature-row">
-          <span class="feat-icon">🔒</span>
-          <div>
-            <div class="feat-title">DPDP Compliant</div>
-            <div class="feat-desc">Consent-first. No PII stored in plain text.</div>
-          </div>
+        <div>
+          <div class="fi-title">Gemini AI Advisory</div>
+          <div class="fi-desc">Crop-specific drought, pest &amp; sowing guidance powered by Google Gemini 2.5</div>
         </div>
       </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:var(--a-50)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--a-700)">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fi-title">Live Mandi Prices</div>
+          <div class="fi-desc">AGMARKNET data with price trends and market analysis</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:var(--surface-tint)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink-3)">
+            <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4zM8 2v16M16 6v16"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fi-title">Works Offline</div>
+          <div class="fi-desc">Full advisory cached locally. Syncs automatically when reconnected</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="background:var(--g-50)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--g-600)">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fi-title">DPDP Compliant</div>
+          <div class="fi-desc">Consent-first. Phone stored as one-way hash. Right-to-erasure guaranteed</div>
+        </div>
+      </div>
+    </div>
 
-      <div style="margin-top:6px;display:flex;flex-direction:column;gap:10px;">
-        <a href="/register.html" class="btn btn-forest btn-full btn-lg">🚀 Get Started — It's Free</a>
-        <p style="text-align:center;font-size:.75rem;color:var(--ink-300)">Already registered? <a href="/home.html" style="color:var(--forest-700);font-weight:600">Open App →</a></p>
+    <!-- CTA -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="/register.html" class="btn btn-primary btn-full btn-xl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        Get Started — It's Free
+      </a>
+      <p style="text-align:center;font-size:.77rem;color:var(--ink-4)">
+        Already registered? <a href="/home.html" style="color:var(--g-700);font-weight:700">Open Dashboard →</a>
+      </p>
+    </div>
+
+    <!-- Trust badges -->
+    <div style="display:flex;justify-content:center;gap:20px;padding:4px 0">
+      <div style="text-align:center">
+        <div style="font-size:.65rem;font-weight:800;color:var(--ink-4);text-transform:uppercase;letter-spacing:.08em">DATA PRIVACY</div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--g-700);margin-top:2px">DPDP Act 2023</div>
+      </div>
+      <div style="width:1px;background:var(--bd-lt)"></div>
+      <div style="text-align:center">
+        <div style="font-size:.65rem;font-weight:800;color:var(--ink-4);text-transform:uppercase;letter-spacing:.08em">POWERED BY</div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--g-700);margin-top:2px">Gemini 2.5 Flash</div>
+      </div>
+      <div style="width:1px;background:var(--bd-lt)"></div>
+      <div style="text-align:center">
+        <div style="font-size:.65rem;font-weight:800;color:var(--ink-4);text-transform:uppercase;letter-spacing:.08em">LANGUAGES</div>
+        <div style="font-size:.72rem;font-weight:700;color:var(--g-700);margin-top:2px">8 Indian</div>
       </div>
     </div>
 
   </div>
-
-  <!-- Bottom Tabbar -->
-  <nav class="tabbar">
-    <a href="/home.html"     class="tab active"><span class="tab-icon">🏠</span><span class="tab-lbl">Home</span></a>
-    <a href="/advisory.html" class="tab"><span class="tab-icon">🤖</span><span class="tab-lbl">Advisory</span></a>
-    <a href="/market.html"   class="tab"><span class="tab-icon">💰</span><span class="tab-lbl">Market</span></a>
-    <a href="/profile.html"  class="tab"><span class="tab-icon">👤</span><span class="tab-lbl">Profile</span></a>
-  </nav>
 
 </div>
 
