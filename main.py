@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.routes import ingestion, advisory, farmer, prices, cross_domain, compliance, mock_agristack, push
+from api.routes import ingestion, advisory, farmer, prices, cross_domain, compliance, mock_agristack, push, auth
 from api.security import SecurityHeadersMiddleware, global_exception_handler
 
 app = FastAPI(
@@ -38,6 +38,7 @@ app.add_middleware(
 app.add_exception_handler(Exception, global_exception_handler)
 
 # ── 4. API Routers ──────────────────────────────────────────────────────────
+app.include_router(auth.router,           prefix="/api/v1/auth",         tags=["Supabase Real-Time Auth"])
 app.include_router(ingestion.router,      prefix="/api/v1/data",         tags=["Data Ingestion"])
 app.include_router(advisory.router,       prefix="/api/v1/advisory",     tags=["AI Advisory"])
 app.include_router(farmer.router,         prefix="/api/v1/farmer",       tags=["Farmer Registry"])

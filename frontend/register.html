@@ -76,6 +76,17 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label" for="fn-email">Email Address <span style="color:var(--s-500)">*</span></label>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input class="form-input" type="email" id="fn-email" placeholder="e.g. ramesh@example.com" required autocomplete="email"/>
+          </div>
+          <div class="form-hint">Used to send real-time verification OTP codes via Supabase Auth</div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label" for="fn-phone">Phone Number <span style="color:var(--s-500)">*</span></label>
           <div class="form-icon-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -152,15 +163,36 @@
           <span id="reg-btn-text">Register &amp; Get Advisory</span>
         </button>
 
-        <p style="text-align:center;font-size:.72rem;color:var(--ink-4);margin-top:13px;line-height:1.6">
-          By registering you agree to our <a href="#" style="color:var(--g-700);font-weight:700">Privacy Policy</a>.<br>
-          Right-to-erasure is available in the Profile page.
-        </p>
+        <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--paper-3)">
+          <span style="font-size:.82rem;color:var(--ink-4)">Already have an account?</span>
+          <a href="/login.html" style="font-size:.84rem;color:var(--g-700);font-weight:700;margin-left:6px">Sign In →</a>
+        </div>
       </form>
     </div>
 
   </div>
 
+</div>
+
+<!-- OTP VERIFICATION MODAL -->
+<div id="otp-modal" class="sheet-overlay hidden">
+  <div class="sheet" style="max-width:420px;margin:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="text-align:center">Enter Verification Code</div>
+    <p style="text-align:center;font-size:.82rem;color:var(--ink-4);margin-bottom:16px">
+      We sent a 6-digit code to <strong id="otp-target-email" style="color:var(--g-800)">—</strong>
+    </p>
+
+    <div class="form-group">
+      <input class="form-input" type="text" id="otp-code-input" placeholder="Enter 6-digit code" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:1.4rem;font-weight:800;font-family:monospace" required/>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" onclick="verifyRegistrationOTP()" id="verify-btn" style="margin-top:12px">
+      <span id="verify-btn-text">Verify &amp; Create Account</span>
+    </button>
+
+    <button class="btn btn-ghost btn-full" onclick="closeOTPModal()" style="margin-top:8px">Cancel</button>
+  </div>
 </div>
 
 <div id="toast" class="toast hidden"></div>

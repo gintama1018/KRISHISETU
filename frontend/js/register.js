@@ -1,3 +1,5 @@
+let pendingFormData = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   // USERFLOW GUARD: If already registered, redirect to home.html
   checkUserflow(false, true);
@@ -7,11 +9,10 @@ async function submitRegistration(e) {
   e.preventDefault();
   const btn = document.getElementById('reg-btn');
   const btnText = document.getElementById('reg-btn-text');
-  btnText.textContent = 'Registering…';
-  btn.disabled = true;
 
   const fd = {
     name: document.getElementById('fn-name').value.trim(),
+    email: document.getElementById('fn-email').value.trim(),
     phone: document.getElementById('fn-phone').value.trim(),
     crop: document.getElementById('fn-crop').value,
     state: document.getElementById('fn-state').value,
@@ -22,35 +23,35 @@ async function submitRegistration(e) {
     consent_timestamp: new Date().toISOString(),
   };
 
+  if (!fd.email) {
+    toast('Please enter your email address');
+    return;
+  }
+
+  btnText.textContent = 'Registering…';
+  btn.disabled = true;
+
   try {
-    // Step 1: Register farmer in Supabase
-    const reg = await apiCall('/api/v1/farmer/register', 'POST', fd);
+    // Call Real-Time Supabase Auth Sign Up & DB Insertion
+    const res = await apiCall('/api/v1/auth/signup', 'POST', fd);
 
-    // Step 2: Capture DPDP consent with returned UUID
-    await apiCall('/api/v1/compliance/consent/capture', 'POST', {
-      farmer_id: reg.farmer_id,
-      phone: fd.phone,
-      consent_method: 'app',
-      data_uses: 'weather_advisory,mandi_prices,risk_alerts',
-    });
+    pendingFormData = { ...fd, farmer_id: res.farmer_id };
 
+    // Save temporary session in localStorage & IndexedDB
     const farmer = {
-      farmer_id: reg.farmer_id,
+      farmer_id: res.farmer_id,
       ...fd,
       registered_at: new Date().toISOString(),
       database: 'supabase_postgresql',
     };
-
     localStorage.setItem('ks_farmer', JSON.stringify(farmer));
     if (typeof saveFarmerLocally === 'function') await saveFarmerLocally(farmer);
 
-    // Step 3: Trigger push notification setup
-    if (typeof initPushNotifications === 'function') {
-      setTimeout(() => initPushNotifications(), 500);
-    }
-
-    toast('Registered! Loading your advisory…');
-    setTimeout(() => window.location.replace('/home.html'), 750);
+    // Open OTP modal for real-time verification
+    document.getElementById('otp-target-email').textContent = fd.email;
+    document.getElementById('otp-modal').classList.remove('hidden');
+    document.getElementById('otp-code-input').focus();
+    toast(`Verification code sent to ${fd.email}`);
   } catch (err) {
     // Offline fallback
     const offlineId = 'LOCAL_' + Date.now();
@@ -62,11 +63,46 @@ async function submitRegistration(e) {
     };
     localStorage.setItem('ks_farmer', JSON.stringify(farmer));
     if (typeof saveFarmerLocally === 'function') await saveFarmerLocally(farmer);
-    if (typeof queueForSync === 'function') await queueForSync('/api/v1/farmer/register', 'POST', fd);
-    toast('Saved offline — will sync when connected');
+    if (typeof queueForSync === 'function') await queueForSync('/api/v1/auth/signup', 'POST', fd);
+    toast('Saved offline — redirecting to dashboard');
     setTimeout(() => window.location.replace('/home.html'), 750);
   }
 
   btnText.textContent = 'Register & Get Advisory';
   btn.disabled = false;
+}
+
+async function verifyRegistrationOTP() {
+  const code = document.getElementById('otp-code-input').value.trim();
+  const btn = document.getElementById('verify-btn');
+  const btnText = document.getElementById('verify-btn-text');
+
+  if (!code || code.length < 6) {
+    toast('Please enter 6-digit code');
+    return;
+  }
+
+  btnText.textContent = 'Verifying…';
+  btn.disabled = true;
+
+  try {
+    const email = pendingFormData ? pendingFormData.email : document.getElementById('fn-email').value.trim();
+    await apiCall('/api/v1/auth/verify-otp', 'POST', {
+      email,
+      token: code,
+    });
+
+    toast('Account verified! Loading your farm dashboard…');
+    setTimeout(() => window.location.replace('/home.html'), 750);
+  } catch (err) {
+    toast(err.message || 'Invalid code — try again');
+  }
+
+  btnText.textContent = 'Verify & Create Account';
+  btn.disabled = false;
+}
+
+function closeOTPModal() {
+  document.getElementById('otp-modal').classList.add('hidden');
+  window.location.replace('/home.html');
 }

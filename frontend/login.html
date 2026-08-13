@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#1A3D28"/>
+  <meta name="description" content="KrishiSetu — Sign in to your farmer account with real-time OTP authentication."/>
+  <title>KrishiSetu — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/app.css?v=4"/>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+      </div>
+      <div class="topbar-text">
+        <span class="topbar-name">Sign In</span>
+        <span class="topbar-tagline">Access your farm profile</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="/" class="tb-btn" title="Back to Dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-content no-tab">
+
+    <!-- Login hero -->
+    <div class="reg-hero fade">
+      <div class="reg-hero-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22V12M12 12C12 7 16 3 21 3s0 8-4 9M12 12C12 7 8 3 3 3s0 8 4 9"/>
+        </svg>
+      </div>
+      <div>
+        <div class="reg-hero-title">Welcome Back</div>
+        <div class="reg-hero-sub">Enter your email to receive a real-time verification code via <strong>Supabase Auth</strong>.</div>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="card fade">
+      <form id="login-form" onsubmit="handleLoginSubmit(event)">
+
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address <span style="color:var(--s-500)">*</span></label>
+          <div class="form-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input class="form-input" type="email" id="login-email" placeholder="e.g. farmer@example.com" required autocomplete="email"/>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          <span id="login-btn-text">Send Verification Code</span>
+        </button>
+
+        <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--paper-3)">
+          <span style="font-size:.82rem;color:var(--ink-4)">Don't have an account?</span>
+          <a href="/register.html" style="font-size:.84rem;color:var(--g-700);font-weight:700;margin-left:6px">Create Account →</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- OTP VERIFICATION MODAL -->
+<div id="otp-modal" class="sheet-overlay hidden">
+  <div class="sheet" style="max-width:420px;margin:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="text-align:center">Enter Verification Code</div>
+    <p style="text-align:center;font-size:.82rem;color:var(--ink-4);margin-bottom:16px">
+      We sent a 6-digit code to <strong id="otp-target-email" style="color:var(--g-800)">—</strong>
+    </p>
+
+    <div class="form-group">
+      <input class="form-input" type="text" id="otp-code-input" placeholder="Enter 6-digit code" maxlength="6" style="text-align:center;letter-spacing:6px;font-size:1.4rem;font-weight:800;font-family:monospace" required/>
+    </div>
+
+    <button class="btn btn-primary btn-full btn-lg" onclick="verifyOTPCode()" id="verify-btn" style="margin-top:12px">
+      <span id="verify-btn-text">Verify &amp; Sign In</span>
+    </button>
+
+    <button class="btn btn-ghost btn-full" onclick="closeOTPModal()" style="margin-top:8px">Cancel</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/db.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

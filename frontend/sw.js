@@ -1,5 +1,5 @@
-// KrishiSetu — Service Worker v5 (Network-First + Real Web Push)
-const CACHE_NAME = 'krishisetu-v5';
+// KrishiSetu — Service Worker v6 (Network-First + Real Web Push + Login)
+const CACHE_NAME = 'krishisetu-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   '/advisory.html',
   '/market.html',
   '/register.html',
+  '/login.html',
   '/profile.html',
   '/dashboard.html',
   '/manifest.json',
@@ -16,6 +17,7 @@ const STATIC_ASSETS = [
   '/js/advisory.js',
   '/js/market.js',
   '/js/register.js',
+  '/js/login.js',
   '/js/profile.js',
   '/js/dashboard.js',
   '/js/db.js',

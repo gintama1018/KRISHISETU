@@ -60,6 +60,10 @@
       "dest": "frontend/register.html"
     },
     {
+      "src": "/login.html",
+      "dest": "frontend/login.html"
+    },
+    {
       "src": "/profile.html",
       "dest": "frontend/profile.html"
     },
