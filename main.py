@@ -66,6 +66,18 @@ async def health_check():
 
 
 # ── 5. Serve Frontend PWA ───────────────────────────────────────────────────
+from fastapi.responses import FileResponse
+
 _frontend_dir = pathlib.Path(__file__).parent / "frontend"
+
+@app.get("/")
+async def root_dashboard():
+    """Default entry point: serve Officer Dashboard as the primary public landing page."""
+    dash_path = _frontend_dir / "dashboard.html"
+    if dash_path.exists():
+        return FileResponse(str(dash_path))
+    return {"message": "KrishiSetu API Server Running"}
+
 if _frontend_dir.exists():
     app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
+

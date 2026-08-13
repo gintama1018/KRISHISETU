@@ -40,6 +40,10 @@
       "dest": "frontend/sw.js"
     },
     {
+      "src": "/dashboard.html",
+      "dest": "frontend/dashboard.html"
+    },
+    {
       "src": "/home.html",
       "dest": "frontend/home.html"
     },
@@ -60,12 +64,16 @@
       "dest": "frontend/profile.html"
     },
     {
-      "src": "/dashboard.html",
+      "src": "/landing.html",
+      "dest": "frontend/index.html"
+    },
+    {
+      "src": "/",
       "dest": "frontend/dashboard.html"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/index.html"
+      "dest": "frontend/dashboard.html"
     }
   ]
 }
