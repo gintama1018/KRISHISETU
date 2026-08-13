@@ -1,6 +1,7 @@
 """
-KrishiSetu — AI Advisory Generator
-Layer 3: AI Advisory (Supports OpenAI GPT-4o-mini / Gemini 2.5 Flash / Fallback)
+KrishiSetu — AI Advisory Generator + Zero-Credit Multilingual Engine
+Layer 3: AI Advisory (OpenAI / Gemini 2.5 Flash / Agronomic Fallback)
+Layer 4: Translates English advisory to 8 Indian languages via deep-translator (0 Gemini API credits)
 """
 import os
 import hashlib
@@ -9,12 +10,13 @@ import httpx
 from typing import Optional
 
 _cache: dict = {}
+_translation_cache: dict = {}
 _cache_lock = threading.Lock()
 
 
 ADVISORY_PROMPT_TEMPLATE = """
 You are KrishiSetu, an expert AI agricultural advisor for Indian farmers.
-Respond ONLY in {language}. Be concise, practical, and farmer-friendly.
+Respond in clear English. Be concise, practical, and farmer-friendly.
 Use simple words. Avoid technical jargon.
 
 FARMER CONTEXT:
@@ -72,7 +74,7 @@ async def _generate_openai(prompt: str, api_key: str) -> str:
 
 
 async def _generate_gemini(prompt: str, api_key: str) -> str:
-    """Generate advisory using Gemini API."""
+    """Generate advisory using Gemini API in English."""
     import google.generativeai as genai
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-2.5-flash")
@@ -95,70 +97,99 @@ async def generate_advisory(
     month: str = "",
     mandi_price: str = "Not available",
 ) -> dict:
-    """Generate AI advisory using OpenAI, Gemini, or Agronomic Fallback."""
+    """
+    Generate AI advisory in English via Gemini/OpenAI (or Template),
+    and translate to requested language via deep-translator (0 Gemini credits burned).
+    """
 
-    cache_key = hashlib.md5(
-        f"{crop}{drought_score}{pest_score}{sowing_rec}{language}{month}".encode()
+    # Base English cache key
+    english_cache_key = hashlib.md5(
+        f"{crop}{drought_score}{pest_score}{sowing_rec}{month}".encode()
     ).hexdigest()
 
+    # Step 1: Fetch or Generate English Base Advisory
+    english_advisory = None
+    was_cached = False
+
     with _cache_lock:
-        if cache_key in _cache:
-            return {**_cache[cache_key], "cached": True}
+        if english_cache_key in _cache:
+            english_advisory = _cache[english_cache_key]
+            was_cached = True
 
-    prompt = ADVISORY_PROMPT_TEMPLATE.format(
-        language=language,
-        crop=crop,
-        location=location,
-        month=month or "Current month",
-        drought_score=drought_score,
-        drought_level=drought_level,
-        pest_score=pest_score,
-        pest_level=pest_level,
-        sowing_rec=sowing_rec,
-        max_temp=max_temp,
-        precip_30d=precip_30d,
-        humidity=humidity,
-        mandi_price=mandi_price,
-    )
+    if not english_advisory:
+        prompt = ADVISORY_PROMPT_TEMPLATE.format(
+            crop=crop,
+            location=location,
+            month=month or "Current month",
+            drought_score=drought_score,
+            drought_level=drought_level,
+            pest_score=pest_score,
+            pest_level=pest_level,
+            sowing_rec=sowing_rec,
+            max_temp=max_temp,
+            precip_30d=precip_30d,
+            humidity=humidity,
+            mandi_price=mandi_price,
+        )
 
-    advisory_text = None
-    openai_key = os.getenv("OPENAI_API_KEY", "").strip()
-    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+        openai_key = os.getenv("OPENAI_API_KEY", "").strip()
+        gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
 
-    # Priority 1: OpenAI (if key starts with sk-)
-    if openai_key and openai_key.startswith("sk-"):
-        try:
-            advisory_text = await _generate_openai(prompt, openai_key)
-        except Exception as e:
-            print(f"[Advisory] OpenAI error: {e}")
+        # Priority 1: OpenAI
+        if openai_key and openai_key.startswith("sk-"):
+            try:
+                english_advisory = await _generate_openai(prompt, openai_key)
+            except Exception as e:
+                print(f"[Advisory] OpenAI error: {e}")
 
-    # Priority 2: Gemini (skip if placeholder key)
-    is_placeholder = "your_" in gemini_key.lower() or "here" in gemini_key.lower() or gemini_key == "AIzaSy..."
-    if not advisory_text and gemini_key and not is_placeholder:
-        try:
-            advisory_text = await _generate_gemini(prompt, gemini_key)
-        except Exception as e:
-            print(f"[Advisory] Gemini error: {e}")
+        # Priority 2: Gemini 2.5 Flash
+        is_placeholder = "your_" in gemini_key.lower() or "here" in gemini_key.lower() or gemini_key == "AIzaSy..."
+        if not english_advisory and gemini_key and not is_placeholder:
+            try:
+                english_advisory = await _generate_gemini(prompt, gemini_key)
+            except Exception as e:
+                print(f"[Advisory] Gemini error: {e}")
 
-    # Priority 3: Agronomic Fallback
-    if not advisory_text:
-        advisory_text = _fallback_advisory(crop, drought_level, pest_level, language)
+        # Priority 3: Agronomic Fallback Template
+        if not english_advisory:
+            english_advisory = _fallback_advisory(crop, drought_level, pest_level)
 
-    result = {
+        with _cache_lock:
+            _cache[english_cache_key] = english_advisory
+
+    # Step 2: Translate English Advisory to Target Language (0 Gemini Credits)
+    final_text = english_advisory
+    if language and language != "English":
+        trans_key = (english_cache_key, language)
+        with _cache_lock:
+            if trans_key in _translation_cache:
+                final_text = _translation_cache[trans_key]
+            else:
+                final_text = None
+
+        if not final_text:
+            try:
+                from language.translate import translate_text
+                final_text = await translate_text(english_advisory, language)
+            except Exception as ex:
+                print(f"[Translation Warning] {ex}")
+                final_text = english_advisory
+
+            with _cache_lock:
+                _translation_cache[trans_key] = final_text
+
+    return {
         "crop": crop,
         "language": language,
-        "advisory": advisory_text,
-        "cached": False,
+        "advisory": final_text,
+        "english_base": english_advisory,
+        "cached": was_cached,
+        "translation_engine": "deep_translator_free" if language != "English" else "native",
     }
 
-    with _cache_lock:
-        _cache[cache_key] = result
 
-    return result
-
-
-def _fallback_advisory(crop: str, drought_level: str, pest_level: str, language: str) -> str:
-    """Farmer-friendly fallback advisory when no API key is provided."""
+def _fallback_advisory(crop: str, drought_level: str, pest_level: str) -> str:
+    """Farmer-friendly fallback advisory in English."""
     c = crop.upper()
     return f"""⚠️ MAIN ALERT: {drought_level} drought risk and {pest_level} pest threat detected for your {c} crop.
 
