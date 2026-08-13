@@ -4,10 +4,16 @@
   "description": "AI-powered farm advisory for rural India — offline-first PWA",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a1628",
-  "theme_color": "#16a34a",
+  "background_color": "#F5F2EC",
+  "theme_color": "#1A3D28",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
@@ -26,7 +32,7 @@
   "shortcuts": [
     {
       "name": "Get Advisory",
-      "url": "/?action=advisory",
+      "url": "/advisory.html",
       "description": "Get today's farm advisory"
     },
     {

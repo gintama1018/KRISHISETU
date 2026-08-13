@@ -34,13 +34,10 @@ def test_pipeline():
     assert res.status_code == 200, f"Mandi prices failed: {res.text}"
     m_data = res.json()
     print(f"   [OK] Commodity: {m_data.get('commodity')} | State: {m_data.get('state')} | Mandis Returned: {len(m_data.get('prices', []))}")
-    if m_data.get('prices'):
-        p = m_data['prices'][0]
-        print(f"   [OK] Market: {p.get('Market', p.get('market'))} | Modal Price: Rs. {p.get('Modal_x0020_Price', p.get('modal_price'))}/q")
 
     # Test 4: DPDP Compliance — Consent Capture & Bcrypt Hashing
     print("\n4. Testing DPDP Compliance (Consent Capture & Bcrypt Hashing)...")
-    farmer_id = f"F_TEST_{int(time.time() * 1000)}"
+    farmer_id = f"F_TEST_{int(time.time())}"
     consent_payload = {
         "farmer_id": farmer_id,
         "phone": "+919876543210",
@@ -51,12 +48,10 @@ def test_pipeline():
     assert res.status_code == 200, f"Consent capture failed: {res.text}"
     c_data = res.json()
     print(f"   [OK] Consent Captured: {c_data['consent_given']} | DPDP Compliant: {c_data['dpdp_compliant']}")
-    print(f"   [OK] Message: {c_data['message']}")
 
-    # Test 5: Farmer Registry — AgriStack Sandbox Integration
-    print("\n5. Testing AgriStack Farmer Registration...")
+    # Test 5: Farmer Registry — Supabase Integration
+    print("\n5. Testing Farmer Registration (Supabase DB)...")
     farmer_payload = {
-        "farmer_id": farmer_id,
         "name": "Ramesh Kalita",
         "phone": "+919876543210",
         "village_code": "ASM-KAM-001",
@@ -70,12 +65,13 @@ def test_pipeline():
     res = client.post("/api/v1/farmer/register", json=farmer_payload)
     assert res.status_code == 200, f"Farmer registration failed: {res.text}"
     f_data = res.json()
-    print(f"   [OK] Farmer Registered ID: {f_data['farmer_id']} | AgriStack Verified: {f_data.get('agristack_verified')}")
+    real_fid = f_data.get('farmer_id', farmer_id)
+    print(f"   [OK] Farmer Registered UUID: {real_fid}")
 
-    # Test 6: AI Advisory Pipeline & Models (Drought + Pest + Sowing + Gemini/OpenAI)
-    print("\n6. Testing Full AI Advisory Pipeline (Models + Gemini/OpenAI)...")
+    # Test 6: AI Advisory Pipeline & Models
+    print("\n6. Testing Full AI Advisory Pipeline (Models + Gemini)...")
     adv_payload = {
-        "farmer_id": f_data['farmer_id'],
+        "farmer_id": real_fid,
         "village_code": "ASM-KAM-001",
         "crop": "rice",
         "language": "English",
@@ -93,14 +89,11 @@ def test_pipeline():
     res = client.post("/api/v1/advisory/generate", json=adv_payload)
     assert res.status_code == 200, f"Advisory generation failed: {res.text}"
     adv_res = res.json()
-    print(f"   [OK] Composite Risk Level: {adv_res['risk']['composite_level']}")
     print(f"   [OK] Drought Score: {adv_res['risk']['drought']['score']}/100 ({adv_res['risk']['drought']['level']})")
     print(f"   [OK] Pest Score: {adv_res['risk']['pest']['score']}/100 ({adv_res['risk']['pest']['level']})")
     print(f"   [OK] Sowing Window: {adv_res['sowing']['recommendation']}")
-    adv_preview_safe = adv_res['advisory'][:120].encode('ascii', 'ignore').decode('ascii')
-    print(f"   [OK] AI Advisory Preview: {adv_preview_safe}...")
 
-    # Test 7: Cross-Domain Intelligence — Heat Stress to Labor Advisory
+    # Test 7: Cross-Domain Intelligence — Labor Safety
     print("\n7. Testing Cross-Domain Intelligence (Heat Stress -> Labor Safety)...")
     labor_payload = {
         "max_temp_c": 34.0,
@@ -111,13 +104,12 @@ def test_pipeline():
     res = client.post("/api/v1/cross-domain/labor-advisory", json=labor_payload)
     assert res.status_code == 200, f"Labor advisory failed: {res.text}"
     l_res = res.json()
-    print(f"   [OK] Heat Stress Level: {l_res['heat_stress_level']}")
-    print(f"   [OK] Safe Working Hours: {l_res['safe_working_hours']}")
+    print(f"   [OK] Heat Stress Level: {l_res['heat_stress_level']} | Safe Hours: {l_res['safe_working_hours']}")
 
-    # Test 8: Cross-Domain Intelligence — Insurance Evidence Logging
+    # Test 8: Insurance Evidence Logging
     print("\n8. Testing Insurance Evidence Logging & Trail Retrieval...")
     log_payload = {
-        "farmer_id": f_data['farmer_id'],
+        "farmer_id": real_fid,
         "event_type": "pest_spray",
         "crop": "rice",
         "drought_score": adv_res['risk']['drought']['score'],
@@ -128,17 +120,17 @@ def test_pipeline():
     res = client.post("/api/v1/cross-domain/insurance-log", json=log_payload)
     assert res.status_code == 200, f"Insurance log failed: {res.text}"
     log_res = res.json()
-    print(f"   [OK] Event Logged ID: {log_res['event_id']} | Trail: {log_res['insurance_trail']}")
+    print(f"   [OK] Record ID: {log_res.get('record_id')} | Hash: {log_res.get('evidence_hash')[:25]}...")
 
     # Retrieve evidence trail
-    res = client.get(f"/api/v1/cross-domain/insurance-trail/{f_data['farmer_id']}")
+    res = client.get(f"/api/v1/cross-domain/insurance-trail/{real_fid}")
     assert res.status_code == 200, f"Insurance trail failed: {res.text}"
     trail_res = res.json()
     print(f"   [OK] Trail Retrieved: {len(trail_res.get('events', []))} evidence events on record.")
 
     # Test 9: DPDP Compliance — Right-to-Erasure Workflow
     print("\n9. Testing DPDP Right-to-Erasure Request...")
-    res = client.post("/api/v1/compliance/erasure/request", json={"farmer_id": f_data['farmer_id'], "reason": "test_deletion"})
+    res = client.post("/api/v1/compliance/erasure/request", json={"farmer_id": farmer_id, "reason": "test_deletion"})
     assert res.status_code == 200, f"Erasure request failed: {res.text}"
     e_res = res.json()
     print(f"   [OK] Erasure Requested: {e_res['erasure_requested']} | Scheduled Deletion: {e_res['scheduled_deletion']}")

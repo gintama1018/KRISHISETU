@@ -224,18 +224,22 @@ Edit `.env`:
 GEMINI_API_KEY=AIzaSy...your_gemini_api_key_here
 ```
 
-### 3. Running the Server
+### 3. Database Setup (Supabase PostgreSQL)
+Execute `schema.sql` in your Supabase SQL Editor to create all 5 production tables with 1 click.
+
+### 4. Running the Server
 ```bash
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Open in your browser:
-- 🌾 **Landing / Onboarding**: [http://localhost:8000/](http://localhost:8000/)
-- 🏠 **Farmer Home**: [http://localhost:8000/home.html](http://localhost:8000/home.html)
+- 📊 **Public Officer Dashboard (Root Entry)**: [http://localhost:8000/](http://localhost:8000/) or [http://localhost:8000/dashboard.html](http://localhost:8000/dashboard.html)
+- 🌾 **Farmer App Onboarding / Landing**: [http://localhost:8000/landing.html](http://localhost:8000/landing.html)
+- 🔑 **Farmer Sign In (Supabase Auth)**: [http://localhost:8000/login.html](http://localhost:8000/login.html)
+- 🏠 **Farmer Home Dashboard**: [http://localhost:8000/home.html](http://localhost:8000/home.html)
 - 🤖 **AI Advisory**: [http://localhost:8000/advisory.html](http://localhost:8000/advisory.html)
 - 💰 **Mandi Prices**: [http://localhost:8000/market.html](http://localhost:8000/market.html)
 - 👤 **Profile & Insurance**: [http://localhost:8000/profile.html](http://localhost:8000/profile.html)
-- 📊 **Officer Dashboard**: [http://localhost:8000/dashboard.html](http://localhost:8000/dashboard.html)
 - 📖 **API Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
