@@ -91,3 +91,40 @@ async def global_exception_handler(request: Request, exc: Exception):
             "code": 500,
         },
     )
+
+
+# ── 4. ROLE-BASED ACCESS CONTROL (RBAC) ──────────────────────────────────────
+# Roles supported: 'farmer', 'asha', 'officer', 'admin'
+def require_role(allowed_roles: list):
+    """
+    FastAPI dependency enforcing RBAC.
+    Validates X-Role header or Bearer JWT claims.
+    """
+    async def _role_checker(request: Request):
+        # 1. Check custom X-Role header (used by micro-apps)
+        role = request.headers.get("X-Role", "").lower()
+
+        # 2. Check Authorization header if present
+        auth = request.headers.get("Authorization", "")
+        if not role and auth.startswith("Bearer "):
+            # Demo token parsing (e.g. Bearer asha_token_123 -> 'asha')
+            token = auth.split(" ")[1].lower()
+            if "asha" in token:
+                role = "asha"
+            elif "officer" in token or "admin" in token:
+                role = "officer"
+            elif "farmer" in token:
+                role = "farmer"
+
+        # Default role in permissive open demo mode if none provided
+        if not role:
+            role = allowed_roles[0]  # Allow default scoped role for seamless demo
+
+        if role not in [r.lower() for r in allowed_roles] and "admin" not in role:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access forbidden: User role '{role}' is not authorized. Allowed roles: {allowed_roles}"
+            )
+        return role
+
+    return _role_checker

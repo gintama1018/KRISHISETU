@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
   '/login.html',
   '/profile.html',
   '/dashboard.html',
+  '/health.html',
   '/manifest.json',
   '/css/app.css',
   '/js/shared.js',

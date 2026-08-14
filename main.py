@@ -31,7 +31,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "X-Role", "X-API-Key", "Accept"],
 )
 
 # ── 3. Global Exception Handler (Zero Stack Trace Disclosure) ───────────────

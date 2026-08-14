@@ -12,11 +12,12 @@ Cross-domain link: health_risk_score > 70 → reduced field work hours in labor 
 
 from datetime import datetime, timezone
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from health.health_risk_model import score_health_risk
 from health.fhir_builder import build_observation
+from api.security import require_role
 
 router = APIRouter()
 
@@ -49,7 +50,7 @@ _health_observations: dict = {}   # farmer_id → last FHIR bundle
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.post("/asha/record")
+@router.post("/asha/record", dependencies=[Depends(require_role(["asha", "admin"]))])
 async def record_asha_observation(req: ASHAObservationRequest):
     """
     ASHA worker submits a health observation for a farmer.

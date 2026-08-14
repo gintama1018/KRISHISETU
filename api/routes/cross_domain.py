@@ -135,7 +135,7 @@ async def log_event_for_insurance(req: InsuranceEventRequest, background_tasks: 
         "timestamp": ts,
         "tamper_evident": True,
         "database": "supabase_postgresql",
-        "message": "Insurance evidence logged immutably in Supabase.",
+        "message": "Insurance evidence logged with tamper-evident SHA-256 fingerprint in Supabase.",
     }
 
 

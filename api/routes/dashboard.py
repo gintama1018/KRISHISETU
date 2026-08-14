@@ -7,7 +7,8 @@ GET /api/v1/dashboard/summary
   Falls back to demo seed data if database is empty.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from api.security import require_role
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ DEMO_VILLAGES = [
 ]
 
 
-@router.get("/summary")
+@router.get("/summary", dependencies=[Depends(require_role(["officer", "admin", "farmer"]))])
 async def get_dashboard_summary():
     """
     Returns live village-level risk aggregates.
