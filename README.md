@@ -10,15 +10,16 @@
 
 ### ⭐ Key Technical Differentiators
 1. **Integrated Healthcare ↔ Agritech Bridge**:
-   - *Occupational Health Scoring*: Rule-based model evaluating heat exposure + pesticide hours + reported symptoms.
-   - *FHIR R4 & ABDM Interoperability*: Exports standard FHIR R4 Observation bundles with LOINC codes (`8310-5` body temp, `56848-4` chemical exposure, `44261-6` health questionnaire).
-   - *Cross-Domain Action*: Critical health risks recorded by ASHA workers automatically curtail daily farm labor hours in the farmer's advisory.
-2. **Offline-First PWA & Web Push (Layer 0)**: Core farmer workflows operate offline using IndexedDB local storage, Service Worker v6 background sync, and native Web Push notifications via VAPID.
-3. **AgriStack Sandbox Integration**: Plug-and-play adapter tested with local mock sandbox, ready to point to live AgriStack sandbox endpoint.
-4. **Supabase PostgreSQL & DPDP Compliance**: Real cloud database with zero plain-text PII storage; phone numbers are bcrypt-hashed, with tamper-evident SHA-256 evidence logging and 30-day right-to-erasure workflows.
-5. **Role-Based Delivery**:
+   - *Occupational Health Scoring*: Rule-based clinical model evaluating heat exposure + pesticide hours + reported symptoms (Deterministic: 38.5°C + 75% RH + 6h pesticide + 3 symptoms = **64/100 HIGH Risk**, capping labor at 4h/day).
+   - *ABDM-Ready FHIR R4 Interoperability*: Exports conformant FHIR R4 Observation bundles with standard clinical LOINC codes (`60830-9` ambient temp in °C, `56848-4` chemical exposure in h/wk, `75325-1` symptom severity assessment score).
+   - *Cross-Domain Action*: High/Critical health risks recorded by ASHA workers automatically curtail daily farm labor hours in the farmer's agricultural advisory.
+2. **Production Benchmarks & 2G Budget**: Full first load bundle is only **35.40 KB gzipped** (5.66s on 2G, 0.19s on 3G, <50ms repeat offline via Service Worker v6). Full report in [`performance_benchmarks.md`](./performance_benchmarks.md).
+3. **Offline-First PWA & Web Push (Layer 0)**: Core farmer workflows operate offline using IndexedDB local storage, Service Worker v6 background sync, and native Web Push notifications via VAPID.
+4. **AgriStack Sandbox Integration**: Plug-and-play adapter tested with local mock sandbox, ready to point to live AgriStack sandbox endpoint.
+5. **Supabase PostgreSQL & DPDP / Health Security**: Real cloud database with zero plain-text PII storage; phone numbers bcrypt-hashed, health data encrypted via AES-256 with immediate purge upon DPDP right-to-erasure request, and SHA-256 tamper-evident insurance evidence logging.
+6. **Role-Based Delivery**:
    - *Farmer Mobile PWA*: Multilingual crop advisory, audio voice playback, offline sync.
-   - *ASHA Health Worker Portal (`/health.html`)*: Fast symptom triage & FHIR R4 inspection.
+   - *ASHA Health Worker Portal (`/health.html`)*: Fast symptom triage & ABDM-ready FHIR R4 inspection.
    - *Agri-Extension Officer Dashboard (`/`)*: Live village risk heatmap aggregated directly from Supabase PostgreSQL.
 
 ---

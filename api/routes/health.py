@@ -80,6 +80,7 @@ async def record_asha_observation(req: ASHAObservationRequest):
         composite_risk_score=risk["composite_risk_score"],
         risk_level=risk["risk_level"],
         recorded_at=ts,
+        has_ppe=req.has_ppe,
     )
 
     # 3. Store (try Supabase, fall back to in-memory)
@@ -106,19 +107,26 @@ async def record_asha_observation(req: ASHAObservationRequest):
         db = get_service_supabase()
         db.table("health_observations").insert(record).execute()
     except Exception as e:
-        print(f"[Health] Supabase insert skipped (table may not exist yet): {e}")
+        print(f"[Health] Supabase insert note (stored in-session): {e}")
 
     # Always store in-memory for same-session FHIR retrieval
     _health_observations[req.farmer_id] = fhir_bundle
 
-    # 4. Cross-domain response: if critical, reduce field hours
+    # 4. Cross-domain response: If High (>=45) or Critical (>=70), reduce field hours
     cross_domain_alert = None
     if risk["composite_risk_score"] >= 70:
         cross_domain_alert = {
-            "type": "labor_restriction",
-            "message": f"⚠️ CRITICAL health risk detected. Field work restricted to {risk['max_safe_field_hours']}h/day.",
+            "type": "critical_labor_restriction",
+            "message": f"🚨 CRITICAL health risk ({risk['composite_risk_score']}/100). Field work restricted to max {risk['max_safe_field_hours']}h/day. Seek medical triage.",
             "max_field_hours": risk["max_safe_field_hours"],
             "trigger": "health_risk_score_critical",
+        }
+    elif risk["composite_risk_score"] >= 45:
+        cross_domain_alert = {
+            "type": "high_labor_restriction",
+            "message": f"⚠️ HIGH health risk ({risk['composite_risk_score']}/100). Field work capped at {risk['max_safe_field_hours']}h/day. Rest in shade, hydrate with ORS.",
+            "max_field_hours": risk["max_safe_field_hours"],
+            "trigger": "health_risk_score_high",
         }
 
     return {
