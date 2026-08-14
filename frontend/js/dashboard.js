@@ -75,24 +75,24 @@ function initMap() {
 }
 
 // ── Stats ─────────────────────────────────────────────────────
-function updateStats() {
-  const totalFarmers = VILLAGES.reduce((s, v) => s + v.farmers, 0);
-  const criticals = VILLAGES.filter((v) => getLevel(v.drought, v.pest) === 'CRITICAL').length;
-  const highs = VILLAGES.filter((v) => getLevel(v.drought, v.pest) === 'HIGH').length;
-  const avgDrought = Math.round(VILLAGES.reduce((s, v) => s + v.drought, 0) / VILLAGES.length);
+function updateStats(villages = VILLAGES) {
+  const totalFarmers = villages.reduce((s, v) => s + (v.farmers || 0), 0);
+  const criticals = villages.filter((v) => getLevel(v.drought, v.pest) === 'CRITICAL').length;
+  const highs = villages.filter((v) => getLevel(v.drought, v.pest) === 'HIGH').length;
+  const avgDrought = Math.round(villages.reduce((s, v) => s + (v.drought || 0), 0) / villages.length);
 
   g('st-farmers', totalFarmers);
   g('st-critical', criticals);
   g('st-high', highs);
   g('st-drought', avgDrought);
   g('st-advisories', Math.floor(totalFarmers * 0.72));
-  g('st-villages', VILLAGES.length);
+  g('st-villages', villages.length);
   g('df-updated', `Last updated: ${new Date().toLocaleTimeString('en-IN')}`);
 }
 
 // ── Alert List ────────────────────────────────────────────────
-function renderAlerts() {
-  const alerts = VILLAGES
+function renderAlerts(villages = VILLAGES) {
+  const alerts = villages
     .map((v) => ({ ...v, lv: getLevel(v.drought, v.pest) }))
     .filter((v) => v.lv !== 'LOW')
     .sort((a, b) => ['CRITICAL', 'HIGH', 'MODERATE'].indexOf(a.lv) - ['CRITICAL', 'HIGH', 'MODERATE'].indexOf(b.lv));
@@ -120,11 +120,11 @@ function renderAlerts() {
 }
 
 // ── Village Table ─────────────────────────────────────────────
-function renderTable() {
+function renderTable(villages = VILLAGES) {
   const tbody = document.getElementById('vt-body');
   if (!tbody) return;
 
-  tbody.innerHTML = VILLAGES.map((v) => {
+  tbody.innerHTML = villages.map((v) => {
     const lv = getLevel(v.drought, v.pest);
     const dLv = getLevel(v.drought, 0);
     const pLv = getLevel(0, v.pest);
@@ -268,11 +268,35 @@ function updateOnline() {
   }
 }
 
+// ── Live Data Fetch from Supabase via dashboard API ───────────────────────
+let activeVillages = VILLAGES; // default: demo seed
+let dataSource = 'demo_seed';
+
+async function fetchLiveData() {
+  try {
+    const res = await fetch('/api/v1/dashboard/summary');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.villages && data.villages.length > 0) {
+      activeVillages = data.villages;
+      dataSource = data.data_source;
+      // Update live/demo indicator
+      const label = document.getElementById('live-label');
+      if (label) {
+        label.textContent = dataSource === 'supabase_live' ? 'Live DB' : 'Demo Data';
+      }
+    }
+  } catch (e) {
+    console.warn('[Dashboard] Live data fetch failed, using demo seed:', e.message);
+  }
+}
+
 // ── Main Load ─────────────────────────────────────────────────
 async function loadAll() {
-  updateStats();
-  renderAlerts();
-  renderTable();
+  await fetchLiveData();          // Try to get live Supabase data first
+  updateStats(activeVillages);
+  renderAlerts(activeVillages);
+  renderTable(activeVillages);
   await loadLaborSummary();
 }
 

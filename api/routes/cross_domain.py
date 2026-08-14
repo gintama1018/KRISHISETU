@@ -19,6 +19,7 @@ class LaborAdvisoryRequest(BaseModel):
     drought_score: int = 30
     humidity_pct: float = 60.0
     crop: str = "default"
+    health_risk_score: Optional[int] = None
 
 
 class InsuranceEventRequest(BaseModel):
@@ -37,8 +38,9 @@ class InsuranceEventRequest(BaseModel):
 @router.post("/labor-advisory")
 async def labor_scheduling_advisory(req: LaborAdvisoryRequest):
     """
-    Correlate heat/drought stress with farm labor scheduling.
+    Correlate heat/drought stress + ASHA health records with farm labor scheduling.
     Tells farmers and field workers WHEN NOT to work the fields.
+    Cross-domain bridge: If health risk score > 70 (e.g. pesticide/heat stress), max field hours are curtailed.
     """
     result = get_labor_scheduling_advisory(
         max_temp_c=req.max_temp_c,
@@ -47,8 +49,33 @@ async def labor_scheduling_advisory(req: LaborAdvisoryRequest):
         crop=req.crop,
     )
 
+    # Cross-Domain Health Factor:
+    health_score = req.health_risk_score
+    # If not explicitly provided, check recent ASHA health observation in memory/DB
+    if health_score is None and req.farmer_id:
+        try:
+            from api.routes.health import _health_observations
+            if req.farmer_id in _health_observations:
+                obs = _health_observations[req.farmer_id]
+                for entry in obs.get("entry", []):
+                    res = entry.get("resource", {})
+                    if "Composite" in res.get("code", {}).get("text", ""):
+                        health_score = res.get("valueQuantity", {}).get("value")
+        except Exception:
+            pass
+
+    if health_score is not None:
+        result["farmer_health_risk_score"] = health_score
+        if health_score >= 70:
+            result["health_advisory_alert"] = "⚠️ ASHA HEALTH ALERT: High occupational health risk recorded. Daily field exposure strictly capped at 2 hours."
+            result["max_safe_daily_hours"] = min(result.get("max_safe_daily_hours", 8), 2.0)
+            result["heat_stress_level"] = "CRITICAL (HEALTH COMPOUNDED)"
+        elif health_score >= 45:
+            result["health_advisory_alert"] = "⚡ Health Alert: Moderate pesticide/heat fatigue reported. Cap field work at 4 hours."
+            result["max_safe_daily_hours"] = min(result.get("max_safe_daily_hours", 8), 4.0)
+
     # Auto-trigger push if heat stress is HIGH or EXTREME
-    if req.farmer_id and result.get("heat_stress_level") in ("HIGH", "EXTREME"):
+    if req.farmer_id and ("HIGH" in str(result.get("heat_stress_level")) or "EXTREME" in str(result.get("heat_stress_level")) or "CRITICAL" in str(result.get("heat_stress_level"))):
         try:
             from api.routes.push import send_risk_alert
             import asyncio

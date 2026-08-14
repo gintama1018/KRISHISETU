@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.routes import ingestion, advisory, farmer, prices, cross_domain, compliance, mock_agristack, push, auth
+from api.routes import ingestion, advisory, farmer, prices, cross_domain, compliance, mock_agristack, push, auth, health, dashboard
 from api.security import SecurityHeadersMiddleware, global_exception_handler
 
 app = FastAPI(
     title="KrishiSetu API",
-    description="AI-powered agritech platform for rural farmers — IIT Guwahati Hackathon",
-    version="2.1.0",
+    description="AI-powered agritech + rural health platform for farmers & ASHA workers — IIT Guwahati Hackathon",
+    version="3.0.0",
     docs_url="/docs" if os.getenv("APP_ENV") != "production" else None,
     redoc_url=None,
 )
@@ -47,21 +47,24 @@ app.include_router(cross_domain.router,   prefix="/api/v1/cross-domain", tags=["
 app.include_router(compliance.router,     prefix="/api/v1/compliance",   tags=["DPDP Compliance"])
 app.include_router(push.router,           prefix="/api/v1/push",         tags=["Web Push Notifications"])
 app.include_router(mock_agristack.router, prefix="/mock/agristack",      tags=["AgriStack Mock"])
+app.include_router(health.router,         prefix="/api/v1/health",        tags=["Health & FHIR"])
+app.include_router(dashboard.router,      prefix="/api/v1/dashboard",     tags=["Officer Dashboard"])
 
 
-@app.get("/api/v1/health", tags=["Health"])
+@app.get("/api/v1/status", tags=["Status"])
 async def health_check():
     return {
         "status": "healthy",
         "project": "KrishiSetu",
-        "version": "2.1.0",
+        "version": "3.0.0",
         "database": "supabase_postgresql",
         "security": "hardened",
         "rate_limiting": "enabled",
         "layers": [
             "offline-pwa", "data-ingestion", "streaming-engine",
             "ai-advisory", "multilingual-voice", "role-delivery",
-            "dpdp-compliance", "web-push-notifications", "security-hardening"
+            "dpdp-compliance", "web-push-notifications", "security-hardening",
+            "health-risk-fhir-r4", "asha-worker-portal", "agristack-sandbox"
         ],
     }
 

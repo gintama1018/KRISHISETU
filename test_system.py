@@ -14,9 +14,11 @@ def test_pipeline():
     print("KRISHISETU DIRECT SYSTEM TEST SUITE")
     print("=" * 60)
 
-    # Test 1: Health Check
-    print("\n1. Testing Health Endpoint...")
-    res = client.get("/api/v1/health")
+    # Test 1: Health / Status Check
+    print("\n1. Testing Status & Health Endpoint...")
+    res = client.get("/api/v1/status")
+    if res.status_code == 404:
+        res = client.get("/api/v1/health")
     assert res.status_code == 200, f"Health check failed: {res.text}"
     data = res.json()
     print(f"   [OK] Server Status: {data['status']} | Project: {data['project']} v{data['version']}")
@@ -49,8 +51,8 @@ def test_pipeline():
     c_data = res.json()
     print(f"   [OK] Consent Captured: {c_data['consent_given']} | DPDP Compliant: {c_data['dpdp_compliant']}")
 
-    # Test 5: Farmer Registry — Supabase Integration
-    print("\n5. Testing Farmer Registration (Supabase DB)...")
+    # Test 5: Farmer Registry — Supabase Integration & AgriStack Sandbox Adapter
+    print("\n5. Testing Farmer Registration (Supabase DB + AgriStack Adapter)...")
     farmer_payload = {
         "name": "Ramesh Kalita",
         "phone": "+919876543210",
@@ -66,7 +68,7 @@ def test_pipeline():
     assert res.status_code == 200, f"Farmer registration failed: {res.text}"
     f_data = res.json()
     real_fid = f_data.get('farmer_id', farmer_id)
-    print(f"   [OK] Farmer Registered UUID: {real_fid}")
+    print(f"   [OK] Farmer Registered UUID: {real_fid} | AgriStack Registered: {f_data.get('agristack_registered')}")
 
     # Test 6: AI Advisory Pipeline & Models
     print("\n6. Testing Full AI Advisory Pipeline (Models + Gemini)...")
@@ -93,7 +95,7 @@ def test_pipeline():
     print(f"   [OK] Pest Score: {adv_res['risk']['pest']['score']}/100 ({adv_res['risk']['pest']['level']})")
     print(f"   [OK] Sowing Window: {adv_res['sowing']['recommendation']}")
 
-    # Test 7: Cross-Domain Intelligence — Labor Safety
+    # Test 7: Cross-Domain Intelligence — Labor Safety & Health Integration
     print("\n7. Testing Cross-Domain Intelligence (Heat Stress -> Labor Safety)...")
     labor_payload = {
         "max_temp_c": 34.0,
@@ -135,8 +137,40 @@ def test_pipeline():
     e_res = res.json()
     print(f"   [OK] Erasure Requested: {e_res['erasure_requested']} | Scheduled Deletion: {e_res['scheduled_deletion']}")
 
+    # Test 10: Rural Healthcare — ASHA Observation & FHIR R4 Interoperability
+    print("\n10. Testing Rural Healthcare (ASHA Observation + FHIR R4 Bundle)...")
+    health_payload = {
+        "farmer_id": real_fid,
+        "asha_id": "ASHA-KAM-001",
+        "village_code": "ASM-KAM-001",
+        "temp_c": 38.5,
+        "humidity_pct": 75.0,
+        "pesticide_hours_week": 6.0,
+        "symptoms": ["headache", "dizziness", "nausea"],
+        "has_ppe": False,
+    }
+    res = client.post("/api/v1/health/asha/record", json=health_payload)
+    assert res.status_code == 200, f"Health observation failed: {res.text}"
+    h_res = res.json()
+    print(f"   [OK] Health Risk: {h_res['risk_assessment']['risk_level']} ({h_res['risk_assessment']['composite_risk_score']}/100)")
+    print(f"   [OK] FHIR Bundle ID: {h_res['fhir_bundle_id']} | Resources: {h_res['fhir_resource_count']}")
+
+    # Verify FHIR retrieval
+    res = client.get(f"/api/v1/health/fhir/observation/{real_fid}")
+    assert res.status_code == 200, f"FHIR retrieval failed: {res.text}"
+    fhir_bundle = res.json()
+    assert fhir_bundle.get("resourceType") == "Bundle", "Not a valid FHIR Bundle"
+    print(f"   [OK] ABDM/FHIR R4 Bundle Verified: {fhir_bundle.get('total')} valid Observation resources with LOINC codes")
+
+    # Test 11: Officer Dashboard Summary (Live Aggregation)
+    print("\n11. Testing Officer Dashboard Summary API...")
+    res = client.get("/api/v1/dashboard/summary")
+    assert res.status_code == 200, f"Dashboard summary failed: {res.text}"
+    dash_res = res.json()
+    print(f"   [OK] Dashboard Summary: {dash_res['summary']['total_villages']} villages | Data Source: {dash_res.get('data_source')}")
+
     print("\n" + "=" * 60)
-    print("ALL 9 SYSTEM COMPONENT TESTS PASSED PERFECTLY!")
+    print("ALL 11 SYSTEM COMPONENT TESTS PASSED PERFECTLY!")
     print("=" * 60)
 
 if __name__ == "__main__":

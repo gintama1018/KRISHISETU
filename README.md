@@ -1,21 +1,25 @@
 # 🌾 KrishiSetu (कृषि सेतु)
-> **AI-Powered Offline-First Agritech Platform for Rural Indian Farmers**  
-> *IIT Guwahati Hackathon — Agritech Track Prototype Submission*
+> **AI-Powered Offline-First Agritech & Rural Healthcare Platform for Farmers and ASHA Workers**  
+> *IIT Guwahati Hackathon — Production Prototype Submission (v3.0.0)*
 
 ---
 
 ## 🌟 Executive Summary
 
-**KrishiSetu** bridges the digital divide for smallholder farmers across rural India. Operating seamlessly on 2G/3G networks and completely offline, KrishiSetu delivers hyper-local crop risk advisories, heat-stress labor scheduling, live market prices, and DPDP-compliant data governance.
+**KrishiSetu** bridges the digital divide for smallholder farmers and primary healthcare workers across rural India. Operating seamlessly on 2G/3G networks and offline, KrishiSetu delivers hyper-local crop risk advisories, heat-stress labor scheduling, occupational health risk triage (ASHA portal), ABDM/FHIR R4-compliant health observations, live market prices, and DPDP-compliant data governance.
 
 ### ⭐ Key Technical Differentiators
-1. **7-Layer Decoupled Architecture**: From Layer 0 (Offline IndexedDB PWA + VAPID Web Push) to Layer 6 (DPDP Cryptographic Compliance + Supabase PostgreSQL).
-2. **Cross-Domain Intelligence Engine**:
-   - *Heat Stress → Labor Safety*: Automatically reschedules field working hours when temperatures & humidity cross safety thresholds.
-   - *Pest Log → Insurance Evidence*: Converts advisory pest events into verifiable evidence trails in Supabase for crop insurance claims.
-3. **Offline-First PWA & Web Push (Layer 0)**: Full functionality offline using IndexedDB caching, Service Worker v6 background sync, and native Web Push notifications via VAPID.
-4. **Supabase PostgreSQL & DPDP Compliance**: Real cloud database with zero plain-text PII storage; phone numbers are bcrypt-hashed, with immutable audit logging and 30-day right-to-erasure.
-5. **Role-Based Delivery**: Tailored mobile PWA experience for farmers + macro-level Leaflet heatmap dashboard for Agri-Extension Officers.
+1. **Integrated Healthcare ↔ Agritech Bridge**:
+   - *Occupational Health Scoring*: Rule-based model evaluating heat exposure + pesticide hours + reported symptoms.
+   - *FHIR R4 & ABDM Interoperability*: Exports standard FHIR R4 Observation bundles with LOINC codes (`8310-5` body temp, `56848-4` chemical exposure, `44261-6` health questionnaire).
+   - *Cross-Domain Action*: Critical health risks recorded by ASHA workers automatically curtail daily farm labor hours in the farmer's advisory.
+2. **Offline-First PWA & Web Push (Layer 0)**: Core farmer workflows operate offline using IndexedDB local storage, Service Worker v6 background sync, and native Web Push notifications via VAPID.
+3. **AgriStack Sandbox Integration**: Plug-and-play adapter tested with local mock sandbox, ready to point to live AgriStack sandbox endpoint.
+4. **Supabase PostgreSQL & DPDP Compliance**: Real cloud database with zero plain-text PII storage; phone numbers are bcrypt-hashed, with tamper-evident SHA-256 evidence logging and 30-day right-to-erasure workflows.
+5. **Role-Based Delivery**:
+   - *Farmer Mobile PWA*: Multilingual crop advisory, audio voice playback, offline sync.
+   - *ASHA Health Worker Portal (`/health.html`)*: Fast symptom triage & FHIR R4 inspection.
+   - *Agri-Extension Officer Dashboard (`/`)*: Live village risk heatmap aggregated directly from Supabase PostgreSQL.
 
 ---
 
@@ -25,48 +29,55 @@
 flowchart TD
     subgraph L0["Layer 0: Client & Offline Infrastructure"]
         PWA["Farmer PWA (HTML5/CSS3/JS)"]
+        ASHA["ASHA Health Portal (health.html)"]
         IDB[("IndexedDB Local Store")]
         SW["Service Worker v6 Sync Queue"]
         PWA <--> IDB
         PWA <--> SW
+        ASHA --> PWA
     end
 
-    subgraph L1["Layer 1: Data Ingestion"]
+    subgraph L1["Layer 1: Data Ingestion & Interoperability"]
         NASA["NASA POWER API"]
         METEO["Open-Meteo Weather"]
         AGRI["AgriStack Sandbox Adapter"]
         MANDI["AGMARKNET Mandi Feed"]
+        FHIR["FHIR R4 / ABDM Builder"]
     end
 
-    subgraph L23["Layer 2 & 3: Streaming & AI Models"]
+    subgraph L23["Layer 2 & 3: Streaming, Risk & AI Models"]
         STREAM["Async Streaming Pipeline"]
         DROUGHT["Drought Risk Model (0-100)"]
-        PEST["Pest Outbreak Model"]
+        PEST["Pest Outbreak Model (0-100)"]
+        HEALTH["Health Risk Model (NIOSH/WHO)"]
         SOWING["Sowing Window Evaluator"]
-        CROSS["Cross-Domain Intelligence"]
+        CROSS["Cross-Domain Engine (Health ↔ Agri ↔ Labor)"]
         GEMINI["Gemini 2.5 Flash Advisory Engine"]
     end
 
     subgraph L45["Layer 4 & 5: Language & Role Delivery"]
-        LANG["Multilingual Engine (8 Languages)"]
-        TTS["ElevenLabs Voice TTS"]
-        DASH["Agri-Extension Officer Dashboard"]
+        LANG["Zero-Credit Translation Engine (8 Languages)"]
+        TTS["Voice Audio Engine"]
+        DASH["Officer Dashboard (Live Supabase Heatmap)"]
     end
 
     subgraph L6["Layer 6: Security & DPDP Compliance"]
         BCRYPT["Bcrypt Phone Hashing"]
-        AUDIT[("Audit Log & Consent DB")]
+        AUDIT[("Supabase Audit Log & Consent DB")]
+        HASH["SHA-256 Tamper-Evident Evidence Hash"]
         ERASURE["Right-to-Erasure Workflow"]
     end
 
     L1 --> STREAM
-    STREAM --> DROUGHT & PEST & SOWING
-    DROUGHT & PEST & SOWING --> CROSS
+    STREAM --> DROUGHT & PEST & SOWING & HEALTH
+    HEALTH --> FHIR
+    DROUGHT & PEST & SOWING & HEALTH --> CROSS
     CROSS --> GEMINI
     GEMINI --> LANG --> TTS
     LANG --> PWA
     CROSS --> DASH
     PWA <--> L6
+    ASHA <--> L6
 ```
 
 ---
@@ -177,9 +188,10 @@ krishisetu/
     ├── profile.html               # Dedicated Profile & Insurance Log page
     ├── dashboard.html             # Agri-Extension Officer Dashboard (Leaflet + Chart.js)
     ├── manifest.json              # PWA manifest
-    ├── sw.js                      # Service Worker v3 (Network-first + offline cache + push)
+    ├── sw.js                      # Service Worker v6 (Network-first + offline cache + push)
+    ├── health.html                # ASHA Health Worker Portal (FHIR R4 Inspection)
     ├── css/
-    │   └── app.css                # Shared warm design system v3 (Linen, Forest Green, Amber)
+    │   └── app.css                # Shared warm design system (Linen, Forest Green, Amber)
     └── js/
         ├── shared.js              # Shared userflow guards, push alerts, API client
         ├── home.js                # Home page UI logic
@@ -210,7 +222,7 @@ python -m venv venv
 # On Windows: venv\Scripts\activate
 # On Linux/macOS: source venv/bin/activate
 
-# Install dependencies
+# Install dependencies (CRITICAL: install all dependencies before running tests or server)
 pip install -r requirements.txt
 ```
 
@@ -225,7 +237,7 @@ GEMINI_API_KEY=AIzaSy...your_gemini_api_key_here
 ```
 
 ### 3. Database Setup (Supabase PostgreSQL)
-Execute `schema.sql` in your Supabase SQL Editor to create all 5 production tables with 1 click.
+Execute `schema.sql` in your Supabase SQL Editor to create all 6 production tables (`farmers`, `health_observations`, `consent_records`, `insurance_events`, `push_subscriptions`, `audit_log`).
 
 ### 4. Running the Server
 ```bash
@@ -234,9 +246,11 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 Open in your browser:
 - 📊 **Public Officer Dashboard (Root Entry)**: [http://localhost:8000/](http://localhost:8000/) or [http://localhost:8000/dashboard.html](http://localhost:8000/dashboard.html)
+- 🏥 **ASHA Health Worker Portal (FHIR R4)**: [http://localhost:8000/health.html](http://localhost:8000/health.html)
 - 🌾 **Farmer App Onboarding / Landing**: [http://localhost:8000/landing.html](http://localhost:8000/landing.html)
 - 🔑 **Farmer Sign In (Supabase Auth)**: [http://localhost:8000/login.html](http://localhost:8000/login.html)
 - 🏠 **Farmer Home Dashboard**: [http://localhost:8000/home.html](http://localhost:8000/home.html)
+- 📑 **Swagger API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - 🤖 **AI Advisory**: [http://localhost:8000/advisory.html](http://localhost:8000/advisory.html)
 - 💰 **Mandi Prices**: [http://localhost:8000/market.html](http://localhost:8000/market.html)
 - 👤 **Profile & Insurance**: [http://localhost:8000/profile.html](http://localhost:8000/profile.html)

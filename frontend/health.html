@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>KrishiSetu — ASHA Health Worker Portal</title>
+  <meta name="description" content="ASHA Worker health risk assessment for farmers — FHIR R4 compatible, cross-domain agri-health intelligence"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --linen:      #F5F2EC;
+      --linen-2:    #EDE9E1;
+      --linen-3:    #E0DBD0;
+      --forest:     #1A3D28;
+      --forest-2:   #234D34;
+      --forest-3:   #2F6340;
+      --forest-7:   #5E9970;
+      --amber:      #C17F24;
+      --amber-2:    #D4952A;
+      --ink:        #1A1714;
+      --ink-3:      #4A4540;
+      --ink-4:      #6B6560;
+      --ink-5:      #A8A49E;
+      --red:        #B23B3B;
+      --red-2:      #E04040;
+      --orange:     #EA580C;
+      --yellow:     #D97706;
+      --green:      #357352;
+      --radius:     14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--linen);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--forest);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-back {
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-title {
+      flex: 1;
+    }
+    .header-title h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 700;
+    }
+    .header-title p {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.65);
+      margin-top: 1px;
+    }
+    .health-badge {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Main Layout ── */
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--linen-3);
+    }
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title svg { flex-shrink: 0; }
+
+    /* ── Form Elements ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-3);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--linen-3);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: var(--linen);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--forest-3);
+      background: #fff;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Symptom Grid ── */
+    .symptom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .symptom-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1.5px solid var(--linen-3);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      transition: all 0.15s;
+      user-select: none;
+      background: var(--linen);
+    }
+    .symptom-chip input { display: none; }
+    .symptom-chip:has(input:checked),
+    .symptom-chip.selected {
+      border-color: var(--red-2);
+      background: #FFF0F0;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* ── Submit Button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover { background: var(--forest-2); }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: var(--ink-5); cursor: not-allowed; }
+
+    /* ── Risk Result Card ── */
+    .result-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 2px solid var(--linen-3);
+      display: none;
+    }
+    .result-card.visible { display: block; }
+    .risk-score-ring {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-weight: 800;
+    }
+    .risk-score-ring .score-num { font-size: 2rem; line-height: 1; }
+    .risk-score-ring .score-label { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; }
+    .risk-low    { background: #E8F5EE; color: var(--green);  border: 3px solid var(--green); }
+    .risk-moderate { background: #FFF8E6; color: var(--yellow); border: 3px solid var(--yellow); }
+    .risk-high   { background: #FFF3ED; color: var(--orange); border: 3px solid var(--orange); }
+    .risk-critical { background: #FFF0F0; color: var(--red-2); border: 3px solid var(--red-2); }
+
+    .score-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .score-item {
+      text-align: center;
+      padding: 10px 6px;
+      background: var(--linen);
+      border-radius: 10px;
+    }
+    .score-item-val { font-size: 1.3rem; font-weight: 800; }
+    .score-item-lbl { font-size: 0.65rem; color: var(--ink-4); margin-top: 2px; }
+
+    .action-box {
+      background: var(--linen);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: var(--ink-3);
+      line-height: 1.5;
+      margin: 12px 0;
+    }
+
+    .cross-domain-alert {
+      background: #FFF3ED;
+      border: 1.5px solid var(--orange);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: var(--orange);
+      font-weight: 600;
+      margin: 12px 0;
+      display: none;
+    }
+    .cross-domain-alert.visible { display: block; }
+
+    /* ── FHIR Viewer ── */
+    .fhir-section { margin-top: 12px; }
+    .fhir-toggle {
+      width: 100%;
+      text-align: left;
+      background: var(--forest);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .fhir-json {
+      display: none;
+      background: #1A1714;
+      color: #9EE6B0;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: 6px;
+    }
+    .fhir-json.visible { display: block; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--ink); color: #fff; padding: 10px 20px;
+      border-radius: 24px; font-size: 0.82rem; font-weight: 600;
+      z-index: 999; opacity: 0; transition: opacity 0.3s;
+      white-space: nowrap; max-width: 90%;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <div class="header-title">
+      <h1>ASHA Health Portal</h1>
+      <p>Farmer Occupational Health Assessment</p>
+    </div>
+    <div class="health-badge">FHIR R4</div>
+  </div>
+
+  <div class="container">
+
+    <!-- Info Banner -->
+    <div class="card" style="background: var(--forest); color:#fff; border-color: var(--forest-2);">
+      <div style="font-size:0.82rem; line-height:1.6; opacity:0.9;">
+        <strong style="font-size:0.9rem; display:block; margin-bottom:6px;">Cross-Domain Health ↔ Agriculture</strong>
+        Record farmer health observations to generate FHIR R4 Observations. 
+        Critical health risk automatically reduces recommended field work hours in the agricultural advisory.
+      </div>
+    </div>
+
+    <!-- Observation Form -->
+    <form id="health-form" onsubmit="submitHealthRecord(event)">
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Farmer & ASHA Details
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Farmer ID / Name</label>
+            <input class="form-input" type="text" id="farmer-id" placeholder="e.g. Rajan Das" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Village Code</label>
+            <input class="form-input" type="text" id="village-code" placeholder="ASM-KAM-001"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ASHA Worker ID</label>
+          <input class="form-input" type="text" id="asha-id" value="ASHA-DEMO-001" placeholder="ASHA-001"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/><path d="M12 6v6l4 2"/></svg>
+          Environmental Exposure
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Temperature (°C)</label>
+            <input class="form-input" type="number" id="temp-c" placeholder="38" min="20" max="55" step="0.1" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Humidity (%)</label>
+            <input class="form-input" type="number" id="humidity" placeholder="72" min="10" max="100" step="1" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Pesticide Hours/Week</label>
+            <input class="form-input" type="number" id="pesticide-hours" placeholder="4" min="0" max="40" step="0.5"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wearing PPE?</label>
+            <select class="form-select" id="has-ppe">
+              <option value="false">No PPE</option>
+              <option value="true">Yes, PPE worn</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+          Reported Symptoms
+        </div>
+        <p style="font-size:0.78rem;color:var(--ink-4);margin-bottom:10px;">Select all symptoms the farmer has reported in the last 24 hours:</p>
+        <div class="symptom-grid">
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="headache"/>🤕 Headache</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="dizziness"/>💫 Dizziness</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="nausea"/>🤢 Nausea</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="vomiting"/>🤮 Vomiting</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="skin_rash"/>🔴 Skin Rash</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="eye_irritation"/>👁️ Eye Irritation</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="breathing_difficulty"/>😮‍💨 Breathing Difficulty</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="muscle_cramps"/>💪 Muscle Cramps</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="excessive_sweating"/>💧 Excessive Sweating</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="confusion"/>🌀 Confusion</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="chest_pain"/>❤️ Chest Pain</label>
+          <label class="symptom-chip"><input type="checkbox" name="symptom" value="fainting"/>😵 Fainting/Collapse</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submit-btn">
+        <span id="submit-text">Record Health Observation</span>
+      </button>
+    </form>
+
+    <!-- Result Card -->
+    <div class="result-card" id="result-card">
+      <div class="card-title" style="margin-bottom:16px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Health Risk Assessment
+      </div>
+
+      <div class="risk-score-ring" id="risk-ring">
+        <span class="score-num" id="composite-score">--</span>
+        <span class="score-label" id="risk-level-label">--</span>
+      </div>
+
+      <div class="score-breakdown">
+        <div class="score-item">
+          <div class="score-item-val" id="heat-score">--</div>
+          <div class="score-item-lbl">Heat Risk</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" id="pest-score-val">--</div>
+          <div class="score-item-lbl">Pesticide Risk</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" id="symptom-score-val">--</div>
+          <div class="score-item-lbl">Symptom Score</div>
+        </div>
+      </div>
+
+      <div class="action-box" id="action-text">--</div>
+
+      <div class="cross-domain-alert" id="cross-domain-alert">
+        <!-- filled by JS -->
+      </div>
+
+      <div style="display:flex;gap:8px;font-size:0.75rem;color:var(--ink-4);margin:8px 0 12px;align-items:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        <span id="fhir-bundle-id">FHIR Bundle ID: --</span>
+      </div>
+
+      <div class="fhir-section">
+        <button class="fhir-toggle" onclick="toggleFhir()" id="fhir-toggle-btn">
+          <span>View FHIR R4 Observation Bundle</span>
+          <span id="fhir-toggle-icon">▼</span>
+        </button>
+        <pre class="fhir-json" id="fhir-json-viewer"></pre>
+      </div>
+
+      <p style="font-size:0.7rem;color:var(--ink-5);margin-top:10px;text-align:center;">
+        FHIR R4 Bundle · LOINC codes 8310-5, 56848-4 · ABDM-compatible format
+      </p>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let fhirData = null;
+    let fhirVisible = false;
+
+    function showToast(msg, dur = 3000) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), dur);
+    }
+
+    async function submitHealthRecord(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const txt = document.getElementById('submit-text');
+      btn.disabled = true;
+      txt.textContent = 'Analysing…';
+
+      const symptoms = Array.from(document.querySelectorAll('input[name="symptom"]:checked'))
+                            .map(c => c.value);
+
+      const payload = {
+        farmer_id:            document.getElementById('farmer-id').value.trim(),
+        asha_id:              document.getElementById('asha-id').value.trim(),
+        village_code:         document.getElementById('village-code').value.trim(),
+        temp_c:               parseFloat(document.getElementById('temp-c').value),
+        humidity_pct:         parseFloat(document.getElementById('humidity').value),
+        pesticide_hours_week: parseFloat(document.getElementById('pesticide-hours').value) || 0,
+        has_ppe:              document.getElementById('has-ppe').value === 'true',
+        symptoms,
+      };
+
+      try {
+        const res = await fetch('/api/v1/health/asha/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || 'Server error');
+
+        renderResult(data);
+        showToast('Health observation recorded!');
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        txt.textContent = 'Record Health Observation';
+      }
+    }
+
+    function renderResult(data) {
+      const risk = data.risk_assessment;
+      const card = document.getElementById('result-card');
+      card.classList.add('visible');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const ring = document.getElementById('risk-ring');
+      ring.className = 'risk-score-ring risk-' + risk.risk_level.toLowerCase();
+      document.getElementById('composite-score').textContent = risk.composite_risk_score;
+      document.getElementById('risk-level-label').textContent = risk.risk_level;
+      document.getElementById('heat-score').textContent = risk.heat_risk_score;
+      document.getElementById('pest-score-val').textContent = risk.pesticide_risk_score;
+      document.getElementById('symptom-score-val').textContent = risk.symptom_score;
+      document.getElementById('action-text').textContent = risk.recommended_action;
+      document.getElementById('fhir-bundle-id').textContent = 'FHIR Bundle ID: ' + (data.fhir_bundle_id || '--');
+
+      // Cross-domain alert
+      const cdAlert = document.getElementById('cross-domain-alert');
+      if (data.cross_domain_alert) {
+        cdAlert.textContent = data.cross_domain_alert.message;
+        cdAlert.classList.add('visible');
+      } else {
+        cdAlert.classList.remove('visible');
+      }
+
+      // Fetch and display FHIR JSON
+      fetch('/api/v1/health/fhir/observation/' + encodeURIComponent(document.getElementById('farmer-id').value.trim()))
+        .then(r => r.json())
+        .then(bundle => {
+          fhirData = bundle;
+          document.getElementById('fhir-json-viewer').textContent = JSON.stringify(bundle, null, 2);
+        })
+        .catch(() => {});
+    }
+
+    function toggleFhir() {
+      fhirVisible = !fhirVisible;
+      document.getElementById('fhir-json-viewer').classList.toggle('visible', fhirVisible);
+      document.getElementById('fhir-toggle-icon').textContent = fhirVisible ? '▲' : '▼';
+    }
+
+    // Highlight symptom chips visually
+    document.querySelectorAll('.symptom-chip input').forEach(cb => {
+      cb.addEventListener('change', function() {
+        this.closest('.symptom-chip').classList.toggle('selected', this.checked);
+      });
+    });
+  </script>
+</body>
+</html>

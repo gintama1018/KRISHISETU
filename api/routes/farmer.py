@@ -68,13 +68,41 @@ async def register_new_farmer(req: FarmerRegistrationRequest):
         raise HTTPException(status_code=500, detail="Failed to register farmer in database.")
 
     farmer = result.data[0]
+    farmer_id = farmer["id"]
+
+    # ── AgriStack Sandbox Registration ────────────────────────────────────────
+    # Calls the AgriStack-compatible adapter (mock sandbox locally, live sandbox in production).
+    # agristack_registered is ONLY true when the adapter call actually succeeds.
+    agristack_registered = False
+    agristack_farmer_id = None
+    try:
+        from ingestion.agristack_adapter import register_farmer as agristack_register
+        agri_data = {
+            "farmer_id": farmer_id,
+            "name": req.name,
+            "phone": req.phone,
+            "village_code": req.village_code,
+            "district": req.district,
+            "state": req.state,
+            "crop": req.crop,
+            "plot_area_acres": req.plot_area_acres,
+            "language_preference": req.language_preference,
+            "consent_given": req.consent_given,
+        }
+        agri_result = await agristack_register(agri_data)
+        agristack_registered = agri_result.get("agristack_verified", False)
+        agristack_farmer_id = agri_result.get("farmer_id")
+    except Exception as e:
+        print(f"[AgriStack] Adapter call failed: {e}")
+
     return {
-        "farmer_id": farmer["id"],
+        "farmer_id": farmer_id,
         "name": farmer["name"],
         "crop": farmer["crop"],
         "state": farmer["state"],
         "village_code": farmer["village_code"],
-        "agristack_registered": True,
+        "agristack_registered": agristack_registered,
+        "agristack_farmer_id": agristack_farmer_id,
         "dpdp_compliant": True,
         "database": "supabase_postgresql",
         "message": "Farmer registered successfully. Advisory pipeline activated.",
