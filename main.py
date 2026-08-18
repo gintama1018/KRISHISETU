@@ -26,10 +26,13 @@ app = FastAPI(
 app.add_middleware(SecurityHeadersMiddleware)
 
 # ── 2. CORS Policy ─────────────────────────────────────────────────────────
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "https://krishisetu.vercel.app,http://localhost:8000,http://127.0.0.1:8000")
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allowed_origins if _allowed_origins else ["https://krishisetu.vercel.app"],
+    allow_credentials=bool(_allowed_origins),
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Role", "X-API-Key", "Accept"],
 )

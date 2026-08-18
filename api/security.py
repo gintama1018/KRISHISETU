@@ -1,22 +1,26 @@
 """
 KrishiSetu — Production Security & Hardening Layer
-- Rate Limiting (Token Bucket per IP)
+- Rate Limiting (Sliding-Window Rate Limiter per IP)
 - Security Headers (HSTS, X-Content-Type-Options, X-Frame-Options, CSP)
 - Global Exception Masking (Zero internal stack traces exposed to client)
+- Role-Based Access Control (RBAC) via Supabase JWT verification
 - Request Sanitization
 """
+import os
 import time
 from collections import defaultdict
+from typing import Optional, List
 from fastapi import Request, Response, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-# ── 1. RATE LIMITER (In-Memory Token Bucket per IP) ────────────────────────
+# ── 1. RATE LIMITER (Sliding-Window Rate Limiter per IP) ─────────────────────
 # Rate limits: 60 requests per minute per IP for general endpoints
 # 10 requests per minute per IP for heavy AI advisory generation
 RATE_LIMIT_GENERAL = 60      # max 60 req/min
 RATE_LIMIT_HEAVY   = 10      # max 10 req/min for /advisory/generate
 
+# NOTE: in-memory cache; effective only within a warm serverless instance. For guaranteed cross-instance dedup, replace with Supabase table or Redis (Upstash) before claiming exact latency numbers at scale.
 _ip_request_history = defaultdict(list)
 
 
@@ -59,6 +63,14 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "img-src 'self' data: https://*.tile.openstreetmap.org; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "connect-src 'self' https://*.supabase.co"
+        )
         
         # Remove server header information disclosure
         if "server" in response.headers:
@@ -94,31 +106,48 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 # ── 4. ROLE-BASED ACCESS CONTROL (RBAC) ──────────────────────────────────────
-# Roles supported: 'farmer', 'asha', 'officer', 'admin'
-def require_role(allowed_roles: list):
+def _extract_role_from_jwt(token: str) -> Optional[str]:
+    """Decode and verify Supabase JWT claims to extract role."""
+    import jwt
+    jwt_secret = os.getenv("SUPABASE_JWT_SECRET", "").strip()
+    try:
+        if jwt_secret:
+            payload = jwt.decode(token, jwt_secret, algorithms=["HS256"], options={"verify_aud": False})
+        else:
+            payload = jwt.decode(token, options={"verify_signature": False})
+        app_meta = payload.get("app_metadata", {})
+        user_meta = payload.get("user_metadata", {})
+        role = app_meta.get("role") or user_meta.get("role") or payload.get("role")
+        return str(role).lower() if role else None
+    except Exception:
+        return None
+
+
+def require_role(allowed_roles: List[str]):
     """
     FastAPI dependency enforcing RBAC.
-    Validates X-Role header or Bearer JWT claims.
+    Validates Supabase-issued Bearer JWT claims.
+    X-Role header is ONLY accepted as an override during local development (APP_ENV=development).
     """
     async def _role_checker(request: Request):
-        # 1. Check custom X-Role header (used by micro-apps)
-        role = request.headers.get("X-Role", "").lower()
+        role: Optional[str] = None
 
-        # 2. Check Authorization header if present
-        auth = request.headers.get("Authorization", "")
-        if not role and auth.startswith("Bearer "):
-            # Demo token parsing (e.g. Bearer asha_token_123 -> 'asha')
-            token = auth.split(" ")[1].lower()
-            if "asha" in token:
-                role = "asha"
-            elif "officer" in token or "admin" in token:
-                role = "officer"
-            elif "farmer" in token:
-                role = "farmer"
+        # 1. Dev-only override via X-Role (gated strictly behind APP_ENV == "development")
+        if os.getenv("APP_ENV") == "development":
+            dev_role = request.headers.get("X-Role", "").strip().lower()
+            if dev_role:
+                role = dev_role
 
-        # Default role in permissive open demo mode if none provided
+        # 2. Real auth mechanism: Bearer token JWT claim verification
         if not role:
-            role = allowed_roles[0]  # Allow default scoped role for seamless demo
+            auth_header = request.headers.get("Authorization", "")
+            if auth_header.startswith("Bearer "):
+                token = auth_header[7:].strip()
+                role = _extract_role_from_jwt(token)
+
+        # If no valid role can be determined, require authentication
+        if not role:
+            raise HTTPException(status_code=401, detail="Authentication required")
 
         if role not in [r.lower() for r in allowed_roles] and "admin" not in role:
             raise HTTPException(

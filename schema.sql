@@ -7,6 +7,7 @@
 -- 1. Farmers table
 CREATE TABLE IF NOT EXISTS farmers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT,
   name TEXT NOT NULL,
   phone_hash TEXT NOT NULL,
   crop TEXT,

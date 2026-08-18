@@ -2,8 +2,13 @@
 KrishiSetu — Direct FastAPI Test Suite
 Uses FastAPI TestClient to test all 7 layers & endpoints directly in-process.
 """
+import os
 import sys
 import time
+
+# Ensure development environment for test suite execution
+os.environ["APP_ENV"] = "development"
+
 from fastapi.testclient import TestClient
 from main import app
 
@@ -149,7 +154,7 @@ def test_pipeline():
         "symptoms": ["headache", "dizziness", "nausea"],
         "has_ppe": False,
     }
-    res = client.post("/api/v1/health/asha/record", json=health_payload)
+    res = client.post("/api/v1/health/asha/record", json=health_payload, headers={"X-Role": "asha"})
     assert res.status_code == 200, f"Health observation failed: {res.text}"
     h_res = res.json()
     print(f"   [OK] Health Risk: {h_res['risk_assessment']['risk_level']} ({h_res['risk_assessment']['composite_risk_score']}/100)")
@@ -164,7 +169,7 @@ def test_pipeline():
 
     # Test 11: Officer Dashboard Summary (Live Aggregation)
     print("\n11. Testing Officer Dashboard Summary API...")
-    res = client.get("/api/v1/dashboard/summary")
+    res = client.get("/api/v1/dashboard/summary", headers={"X-Role": "officer"})
     assert res.status_code == 200, f"Dashboard summary failed: {res.text}"
     dash_res = res.json()
     print(f"   [OK] Dashboard Summary: {dash_res['summary']['total_villages']} villages | Data Source: {dash_res.get('data_source')}")

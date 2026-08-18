@@ -9,6 +9,7 @@ import threading
 import httpx
 from typing import Optional
 
+# NOTE: in-memory cache; effective only within a warm serverless instance. For guaranteed cross-instance dedup, replace with Supabase table or Redis (Upstash) before claiming exact latency numbers at scale.
 _cache: dict = {}
 _translation_cache: dict = {}
 _cache_lock = threading.Lock()

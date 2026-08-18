@@ -1,23 +1,12 @@
 """
-KrishiSetu — Cross-Domain Correlation Module (DIFFERENTIATOR)
-Layer 3: AI Risk Models (NEW addition — bonus marks)
+KrishiSetu — Cross-Domain Correlation Module
+Layer 3: AI Risk Models & Labor Scheduling Intelligence
 
-Two cross-domain correlations:
-1. Heat/drought stress → Farm Labor scheduling advisory
-   (Tells farmers & field workers WHEN NOT to work the fields)
-2. Pest/spray event → Insurance-evidence log trail
-   (Logged events that could feed a future crop-insurance claim)
+Cross-Domain Correlation:
+Heat/drought stress → Farm Labor scheduling advisory
+(Tells farmers & field workers WHEN NOT to work the fields based on WBGT thresholds)
 """
 from datetime import datetime, timezone
-from typing import Optional
-import sqlite3
-import os
-
-DEFAULT_DB = "/tmp/krishisetu.db" if os.getenv("VERCEL") else "./krishisetu.db"
-DB_PATH = os.getenv("DATABASE_PATH", DEFAULT_DB)
-
-
-# ─── Labor Scheduling Advisory ────────────────────────────────────────────────
 
 # Heat stress thresholds (°C) — WBGT-informed
 HEAT_STRESS_LEVELS = [
@@ -85,87 +74,3 @@ def get_labor_scheduling_advisory(
         "drought_modifier": drought_modifier,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
-
-
-# ─── Insurance Evidence Log ────────────────────────────────────────────────────
-
-def _init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS insurance_event_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            farmer_id TEXT NOT NULL,
-            event_type TEXT NOT NULL,
-            crop TEXT,
-            pest_detected TEXT,
-            spray_product TEXT,
-            drought_score INTEGER,
-            pest_score INTEGER,
-            lat REAL,
-            lon REAL,
-            advisory_text TEXT,
-            timestamp TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-
-def log_insurance_event(
-    farmer_id: str,
-    event_type: str,  # "pest_spray" | "drought_stress" | "crop_loss"
-    crop: str,
-    drought_score: Optional[int] = None,
-    pest_score: Optional[int] = None,
-    pest_detected: Optional[str] = None,
-    spray_product: Optional[str] = None,
-    lat: Optional[float] = None,
-    lon: Optional[float] = None,
-    advisory_text: Optional[str] = None,
-) -> dict:
-    """
-    Log a pest/spray or drought event as insurance evidence.
-    Creates an immutable audit trail that could support a future insurance claim.
-    """
-    _init_db()
-    timestamp = datetime.now(timezone.utc).isoformat()
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.execute(
-        """
-        INSERT INTO insurance_event_log
-        (farmer_id, event_type, crop, pest_detected, spray_product,
-         drought_score, pest_score, lat, lon, advisory_text, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (farmer_id, event_type, crop, pest_detected, spray_product,
-         drought_score, pest_score, lat, lon, advisory_text, timestamp),
-    )
-    event_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-
-    return {
-        "event_id": event_id,
-        "farmer_id": farmer_id,
-        "event_type": event_type,
-        "crop": crop,
-        "timestamp": timestamp,
-        "insurance_trail": True,
-        "message": "Event logged as insurance evidence. Keep this ID for claim support.",
-    }
-
-
-def get_insurance_trail(farmer_id: str) -> list:
-    """Retrieve all logged insurance evidence events for a farmer."""
-    _init_db()
-    conn = sqlite3.connect(DB_PATH)
-    rows = conn.execute(
-        "SELECT * FROM insurance_event_log WHERE farmer_id = ? ORDER BY timestamp DESC",
-        (farmer_id,),
-    ).fetchall()
-    conn.close()
-
-    columns = ["id", "farmer_id", "event_type", "crop", "pest_detected", "spray_product",
-                "drought_score", "pest_score", "lat", "lon", "advisory_text", "timestamp"]
-    return [dict(zip(columns, row)) for row in rows]

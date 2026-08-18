@@ -132,13 +132,13 @@ sequenceDiagram
 
 | Layer | Component | Implementation Highlights |
 |:---:|:---|:---|
-| **0** | **Offline Client** | `sw.js` (Network-First v3), `db.js` (IndexedDB), Native Push Notifications API |
-| **1** | **Data Ingestion** | `ingestion/weather.py` (NASA POWER daily + Open-Meteo), `mandi_feed.py` (AGMARKNET data.gov.in) |
+| **0** | **Offline Client** | `sw.js` (Network-First v6), `db.js` (IndexedDB), Native Web Push Notifications API |
+| **1** | **Data Ingestion** | `ingestion/weather.py` (NASA POWER daily + Open-Meteo), `mandi_feed.py` (AGMARKNET data.gov.in), `health/fhir_builder.py` |
 | **2** | **Streaming Engine** | `stream/stream.py` (Async event pipeline emitting village-level risk signals) |
-| **3** | **Risk & AI Models** | `models/drought.py`, `models/pest.py`, `models/sowing.py`, `models/cross_domain.py`, `advisory/gemini_advisor.py` |
-| **4** | **Language & Voice** | `language/translate.py` (8 Indian languages: Hindi, Bengali, Assamese, Tamil, Telugu, Marathi, Gujarati, English) + ElevenLabs TTS |
-| **5** | **Role Delivery** | Multi-page PWA for Farmers (`/home.html`, `/advisory.html`, `/market.html`, `/profile.html`) + Leaflet & Chart.js Dashboard (`/dashboard.html`) |
-| **6** | **DPDP Security** | `api/routes/compliance.py` (bcrypt phone hashing, sqlite audit logging, 30-day erasure) |
+| **3** | **Risk & AI Models** | `models/drought.py`, `models/pest.py`, `models/sowing.py`, `models/cross_domain.py`, `health/health_risk_model.py`, `advisory/gemini_advisor.py` |
+| **4** | **Language & Voice** | `language/translate.py` (Zero-credit translation for 8 Indian languages) + Voice Audio Engine |
+| **5** | **Role Delivery** | Multi-page PWA for Farmers (`/home.html`, `/advisory.html`, `/market.html`, `/profile.html`) + ASHA Portal (`/health.html`) + Officer Dashboard (`/dashboard.html`) |
+| **6** | **DPDP Security** | `api/routes/compliance.py` (bcrypt phone hashing, Supabase audit logging, 30-day erasure, RBAC enforcement) |
 
 ---
 

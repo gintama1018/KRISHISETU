@@ -21,6 +21,7 @@ X-XSS-Protection: 1; mode=block
 Referrer-Policy: strict-origin-when-cross-origin
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 Permissions-Policy: geolocation=(), microphone=(), camera=()
+Content-Security-Policy: default-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co
 ```
 
 ### C. Zero Stack Trace Disclosure (Error Masking)
@@ -31,7 +32,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 
 ## 2. ⚡ Rate Limiting & Denial-of-Service (DoS) Protection
 
-### A. In-Memory Token Bucket Rate Limiter
+### A. Sliding-Window Rate Limiter
 - **General Endpoints**: Capped at **60 requests per minute per IP** (prevents scraping mandi prices or farmer profiles).
 - **AI Advisory Generation (`/api/v1/advisory/generate`)**: Capped at **10 requests per minute per IP** (prevents AI API quota exhaustion attacks).
 - **HTTP 429 Payload**: When limit is exceeded, returns `{"error": "Too Many Requests", "code": 429}`.
@@ -71,12 +72,12 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 ```
 
 ### A. Layer 0 Offline PWA Offloading (80% Load Reduction)
-- **IndexedDB & Service Worker v5**: 80% of daily farmer interactions (viewing cached advisories, checking saved risk scores) happen **locally on device**.
+- **IndexedDB & Service Worker v6**: 80% of daily farmer interactions (viewing cached advisories, checking saved risk scores) happen **locally on device**.
 - **Network-First Caching**: Network hits occur only when connectivity is restored, preventing server overload during network reconnection spikes.
 
 ### B. MD5 Advisory Deduplication & Caching
 - **Shared Village Advisory**: Advisories for the same crop + weather condition in a village are hashed (`MD5`) and cached for 24 hours.
-- **Gemini Call Optimization**: 10,000 farmers in the same district generate **only 1 Gemini API call**, serving all 10,000 farmers from the backend cache in `< 5ms`.
+- **Gemini Call Optimization**: Reduces duplicate Gemini calls within a warm instance; a Redis-backed cache is recommended for guaranteed cross-instance dedup at full scale.
 
 ### C. Async Non-Blocking FastAPI Pipeline
 - Built on `async/await` and `uvicorn` event loops, handling **thousands of concurrent connections per process**.
@@ -88,7 +89,7 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 
 | Threat Vector | Mitigation Strategy |
 |---|---|
-| **DDoS / Request Flooding** | Per-IP Rate Limiting (Token Bucket) + Vercel DDoS protection at edge |
+| **DDoS / Request Flooding** | Per-IP Sliding-Window Rate Limiter + Vercel DDoS protection at edge |
 | **API Key Theft** | Zero keys on client; secrets isolated in server environment |
 | **Data Breach / Leakage** | `bcrypt` phone hashing; zero plain-text PII in database |
 | **Malicious Input** | Pydantic strict schemas + parameterized PostgreSQL queries |
@@ -100,4 +101,4 @@ Permissions-Policy: geolocation=(), microphone=(), camera=()
 
 ## Conclusion
 
-KrishiSetu combines **bank-grade client privacy**, **server-side token bucket protection**, **MD5 advisory caching**, and **offline-first PWA offloading** to deliver a system that easily scales to **10,000+ concurrent farmers** without crashing or incurring high cloud bills.
+KrishiSetu combines **client privacy**, **server-side sliding-window rate limiting**, **MD5 advisory caching**, and **offline-first PWA offloading** to deliver a system architecture capable of supporting **10,000+ concurrent farmers** efficiently and reliably.

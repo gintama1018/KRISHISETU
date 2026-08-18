@@ -13,8 +13,12 @@ Evaluates the explicit PDF Hackathon requirements:
 
 import time
 import os
+import time
 import json
 import gzip
+
+os.environ["APP_ENV"] = "development"
+
 from fastapi.testclient import TestClient
 from main import app
 
@@ -30,28 +34,28 @@ def run_benchmarks():
     # ── Benchmark 1: API Response Latencies [MEASURED] ───────────────────────
     print("\n[1/5] Measuring API Endpoint Latencies (10 iterations each)...")
     endpoints = [
-        ("Status Health Check", "GET", "/api/v1/status", None),
-        ("Dashboard Live Aggregation", "GET", "/api/v1/dashboard/summary", None),
+        ("Status Health Check", "GET", "/api/v1/status", None, {}),
+        ("Dashboard Live Aggregation", "GET", "/api/v1/dashboard/summary", None, {"X-Role": "officer"}),
         ("Health Risk & FHIR Generation", "POST", "/api/v1/health/risk-score", {
             "temp_c": 38.5, "humidity_pct": 75.0, "pesticide_hours_week": 6.0,
             "symptoms": ["headache", "dizziness", "nausea"], "has_ppe": False
-        }),
-        ("FHIR Bundle Retrieval", "GET", "/api/v1/health/fhir/observation/test-bench", None),
+        }, {}),
+        ("FHIR Bundle Retrieval", "GET", "/api/v1/health/fhir/observation/test-bench", None, {}),
         ("Cross-Domain Labor Advisory", "POST", "/api/v1/cross-domain/labor-advisory", {
             "max_temp_c": 38.5, "drought_score": 30, "humidity_pct": 75.0, "crop": "rice"
-        }),
-        ("DPDP Policy & Compliance", "GET", "/api/v1/compliance/policy", None),
+        }, {}),
+        ("DPDP Policy & Compliance", "GET", "/api/v1/compliance/policy", None, {}),
     ]
 
     api_results = []
-    for name, method, path, payload in endpoints:
+    for name, method, path, payload, headers in endpoints:
         durations = []
         for _ in range(10):
             t0 = time.perf_counter()
             if method == "GET":
-                r = client.get(path)
+                r = client.get(path, headers=headers)
             else:
-                r = client.post(path, json=payload)
+                r = client.post(path, json=payload, headers=headers)
             t1 = time.perf_counter()
             if r.status_code in (200, 201):
                 durations.append((t1 - t0) * 1000)

@@ -71,6 +71,7 @@ async def signup_farmer(req: SignUpRequest):
 
     # Step 2: Insert / Upsert profile in Supabase 'farmers' table
     farmer_data = {
+        "email": req.email,
         "name": req.name,
         "phone_hash": phone_hash,
         "crop": req.crop,
@@ -140,13 +141,13 @@ async def verify_otp(req: VerifyOTPRequest):
         user = res.user
         session = res.session
     except Exception as ex:
-        # Fallback for dev demo verification
-        if req.token in ("123456", "000000"):
+        # Fallback ONLY in development environment
+        if os.getenv("APP_ENV") == "development" and req.token in ("123456", "000000"):
             return {
                 "ok": True,
                 "verified": True,
                 "email": req.email,
-                "message": "OTP verified successfully.",
+                "message": "OTP verified successfully (development bypass).",
             }
         raise HTTPException(status_code=400, detail=f"Invalid OTP code: {str(ex)}")
 
@@ -188,9 +189,14 @@ async def login_farmer(req: LoginRequest):
     except Exception as e:
         print(f"[AUTH LOGIN NOTICE] {e}")
 
-    # Fetch existing profile from Supabase by email or latest created
-    farmers = db_service.table("farmers").select("*").order("created_at", desc=True).limit(5).execute().data or []
-    matching_farmer = farmers[0] if farmers else None
+    # Fetch existing profile from Supabase filtered strictly by email
+    matching_farmer = None
+    try:
+        res_farmer = db_service.table("farmers").select("*").eq("email", req.email).limit(1).execute()
+        if res_farmer.data:
+            matching_farmer = res_farmer.data[0]
+    except Exception as e:
+        print(f"[AUTH LOGIN QUERY NOTICE] {e}")
 
     return {
         "ok": True,
